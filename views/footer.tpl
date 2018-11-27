@@ -7,31 +7,31 @@
         </a>
       </div>
       <dl class="footer-nav">
-        <dt class="nav-title">GALLERY</dt>
+        <dt class="nav-title">健康资讯</dt>
         <dd class="nav-item">
           <a href="#">
-            <span class="glyphicon glyphicon-credit-card"> Donate</span>
+            <span class="glyphicon glyphicon-credit-card"> 捐助</span>
           </a>
         </dd>
         <dd class="nav-item">
           <a href="#" target="_blank">
-            <span class='glyphicon glyphicon-bullhorn'> Present</span>
+            <span class='glyphicon glyphicon-bullhorn'> 定制计划 </span>
           </a>
         </dd>
       </dl>
       <dl class="footer-nav">
-        <dt class="nav-title">ABOUT</dt>
+        <dt class="nav-title">关于</dt>
 
         <dd class="nav-item">
           <a href="#">
-            <span class='glyphicon glyphicon-info-sign'> </span>
+            <span class='glyphicon glyphicon-info-sign'> 关于我们 </span>
           </a>
         </dd>
 
       </dl>
 
       <dl class="footer-nav hidden">
-        <dt class="nav-title">SOCIAL</dt>
+        <dt class="nav-title">社会反馈</dt>
         <dd class="nav-item">
           <a href="#" target="_blank">
             <span class='glyphicon glyphicon-globe'></span> 
@@ -40,7 +40,7 @@
       </dl>
 
       <dl class="footer-nav">
-        <dt class="nav-title">CONTACT</dt>
+        <dt class="nav-title">联系方式</dt>
         <dd class="nav-item">
           <a href="#">
             <span class='glyphicon glyphicon-comment'></span>
