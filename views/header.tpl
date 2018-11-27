@@ -16,19 +16,26 @@
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" >
       <ul class="nav navbar-nav">
         <li><a href='{{urlfor "IndexController.Index"}}'>
-          <span class="glyphicon glyphicon-home"></span> Anonymous Navigator
+          <span class="glyphicon glyphicon-home"></span> 首页
+        </a></li>
+        <li><a href='{{urlfor "IndexController.Index"}}'>
+          <span class="glyphicon glyphicon-heart"></span> 关注健康
+        </a></li>
+        <li><a href='{{urlfor "IndexController.Index"}}'>
+          <span class="glyphicon glyphicon-list-alt"></span> 我的计划
         </a></li>
         <li>
-            <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
-          <span class="glyphicon glyphicon-picture"></span> Picset <b class="caret"></b>
-        </a>
+          <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
+          <span class="glyphicon glyphicon-time"></span> 定制计划 <b class="caret"></b>
+          </a>
             <ul class="dropdown-menu">
-                <li role="presentation" class="dropdown-header">main route</li>
-                <li><a href="/picset">Picset</a></li>
+                <li role="presentation" class="dropdown-header">计划介绍</li>
+                <li><a href="/">每日打卡</a></li>
+                <li><a href="/">瓜分气馁者</a></li>
                 <li role="presentation" class="divider"></li>
-                <li role="presentation" class="dropdown-header">selected picsets</li>
-                <li><a href="/picset/pacificgirls/">Pacific girls</a></li>
-                <li><a href="/picset/55156/">The 55156 site</a></li>
+                <li role="presentation" class="dropdown-header">排行</li>
+                <li><a href="/">坚持最长排行</a></li>
+                <li><a href="/">获得瓜分最多</a></li>
             </ul>
         </li>
       </ul>
@@ -36,7 +43,7 @@
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
-            <span class='glyphicon glyphicon-info-sign'></span> Account <b class="caret"></b>
+            <span class='glyphicon glyphicon-user'></span> Account <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             {{if .IsLogin}}
