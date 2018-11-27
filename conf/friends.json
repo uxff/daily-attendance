@@ -1,0 +1,39 @@
+[
+  {
+    "name":"Baidu",
+    "url":"http://www.baidu.com"
+  },
+  {
+    "name":"小桔",
+    "url":"http://www.xiaojukeji.com/"
+  },
+  {
+    "name":"拼多多",
+    "url":"http://www.pinduoduo.com"
+  },
+  {
+    "name":"陆金所",
+    "url":"http://www.lu.com"
+  },
+  {
+    "name":"携程",
+    "url":"http://www.ctrip.com"
+  },
+  {
+    "name":"联想",
+    "url":"http://www.lenovo.com"
+  },
+  {
+    "name":"成都美女",
+    "url":"http://chengdugirl.com"
+  },
+  {
+    "name":"重庆妹子",
+    "url":"http://chongqinggirl.com"
+  },
+  {
+    "name":"四川辣妹",
+    "url":"http://sichuangirl.com"
+  }
+
+]

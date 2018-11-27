@@ -1,0 +1,30 @@
+{
+  "name": "beegoauth",
+  "version": "0.0.1",
+  "homepage": "http://antenna.jp",
+  "authors": [
+    "antenna"
+  ],
+  "description": "beegoauth",
+  "keywords": [
+    "antenna"
+  ],
+  "license": "PRIVATE",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "public/bower",
+    "test",
+    "tests",
+    "node_modules",
+    "bower_components",
+    "static/bower"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "bootstrap": "~3.3.1",
+    "fontawesome": "~4.2.0"
+  },
+  "devDependencies": {},
+  "main": "beegoauth-main"
+}
