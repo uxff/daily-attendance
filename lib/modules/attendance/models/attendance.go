@@ -1,4 +1,4 @@
-package attendance
+package models
 
 import (
 	"time"
