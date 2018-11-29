@@ -25,5 +25,5 @@ func SignupUser(u *models.User) (int64, error) {
 		return 0, err
 	}
 
-	return u.Id, err
+	return u.Uid, err
 }

@@ -21,7 +21,7 @@ func Authenticate(email string, password string) (user *models.User, err error) 
 			err = errors.New(msg)
 		}
 		return user, err
-	} else if user.Id < 1 {
+	} else if user.Uid < 1 {
 		// No user
 		return user, errors.New(msg)
 	} else if user.Password != convert.StrTo(password).Md5() {

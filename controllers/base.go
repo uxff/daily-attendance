@@ -80,7 +80,7 @@ func (c *BaseController) Finish() {
 }
 
 func (c *BaseController) GetLogin() *models.User {
-	u := &models.User{Id: c.GetSession("userinfo").(int64)}
+	u := &models.User{Uid: c.GetSession("userinfo").(int64)}
 	u.Read()
 	return u
 }
@@ -90,7 +90,7 @@ func (c *BaseController) DelLogin() {
 }
 
 func (c *BaseController) SetLogin(user *models.User) {
-	c.SetSession("userinfo", user.Id)
+	c.SetSession("userinfo", user.Uid)
 }
 
 func (c *BaseController) LoginPath() string {

@@ -4,43 +4,63 @@ import (
 	"time"
 )
 
+const (
+	CheckInTypeHourly = 4
+	CheckInTypeDaily = 5
+	CheckInTypeMonthly = 7
+)
+
+const (
+	// CheckInKeyType extendible
+	CheckInKeyWorkUp = "WORKUP"
+	CheckInKeyWorkOff = "WORKOFF"
+	CheckInKeyHealthDaily = "HEALTHD"
+)
 //
 type AttendanceActivity struct {
 	Aid int
 	Name string `orm:"size(32);unique"`
 
-	ValidTimeStart string `orm:""`
-	ValidTimeEnd string `orm:""`
+	ValidTimeStart string `orm:"-"`
+	ValidTimeEnd string `orm:"-"`
 
-	// rule for daily work:[{"WORK_UP":{"timespan":["00:00","10:00"]}},{"WORK_OFF":{"timespan":["18:00","23:59"]}}]
+	// rule for daily work:[{"WORKUP":{"timespan":["00:00","10:00"]}},{"WORKOFF":{"timespan":["18:00","23:59"]}}]
 	// rule for daily health:[{"HEALTH":{"timespan":["06:00","09:00"]}}]
-	// rule for monthly report:[{"MONTH_UPPER":{"dayspan":["01","02"]}}]
-	Rule string `orm:""` // json
-	//DailyNeedTimes int `orm:""`
-	NeedStep int `orm:""`
-	CheckinType int `orm:""` // Daily Hourly Monthly
-	Creator int `orm:""`
-	Created time.Time `orm:""`
-	Updated time.Time `orm:""`
-	JoinUidCount int `orm:""`
-	//ShareNeedTimes int //
-	LoserWastagePercent float32
+	// rule for monthly report:[{"REPORTM":{"dayspan":["01","02"]}}]
+	CheckInRule string `orm:"-"` // json, rule for checkin
+	NeedStep int `orm:"-"`
+	CheckInType int `orm:"-"` // Daily Hourly Monthly
+	CreatorUid int `orm:"-"`
+	Created time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	JoinPrice int	`orm:"-"`
+	JoinedUserCount int `orm:"-"`
+	// loser lost all, or percent of his all
+	LoserWastagePercent float32 `orm:"-"`
+	// use Wasting Rule?
+	//BonusRule string // use Bonus Rule?
+	//Top N player can get Bonus?
+	// leverage?
+
 }
 
-// user+aid - 1:N - jal
+// unique (user+aid+(status=1))
+// user - 1:N - jal
 type JoinActivityLog struct {
-	JalId int
-	Aid int
-
-	Uid int
-	Created time.Time
-	Updated time.Time `orm:""`
-	StartDate string //mysql.Date
-	NeedStep int
-	Step int
-	IsFinish int
-	RewardDispatched int
-	Status int // is deleted, can restart
+	JalId int `orm:"-"`
+	Aid int `orm:"-"`
+	Uid int `orm:"-"`
+	Created time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	StartDate string `orm:"-"` //mysql.Date
+	NeedStep int `orm:"-"`
+	Step int `orm:"-"`
+	LastStepDate string `orm:"-"`
+	IsFinish int `orm:"-"` // is finishing, w
+	//IsMissed int // is wasted
+	RewardDispatched int `orm:"-"`
+	JoinUtlId int `orm:"-"`
+	Status int `orm:"-"` // missed,deleted, can restart
 }
 
 const (
@@ -52,15 +72,15 @@ const (
 // user - 1:N - CilId
 // CheckInKey 1:1 CilId
 type CheckInLog struct {
-	CilId int
-	JalId int
-	Aid int
-	Uid int
-	CheckInKeyType string
-	CheckInKey string	// unique
-	Created time.Time
-	Updated time.Time
-	Status int
+	CilId int `orm:"-"`
+	JalId int `orm:"-"` // needed?
+	Aid int `orm:"-"`
+	Uid int `orm:"-"`
+	CheckInKeyType string `orm:"-"`
+	CheckInKey string `orm:"-"`	// unique
+	Created time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
 }
 
 const (
@@ -74,70 +94,72 @@ const (
 
 // user - 1:N - utl
 type UserTradeLog struct {
-	UtlId int
-	Uid int
-	Amount int
-	TradeType int
-	SourceType int
-	Balance int
-	PayStatus int
-	Craeted time.Time
-	Updated time.Time
-	Status int
-	OriginUtlId int
-	WastageDetail string
-	ConsumeDetail string
-	Remark string
-	PayInfo string
+	UtlId int `orm:"-"`
+	Uid int `orm:"-"`
+	Amount int `orm:"-"`
+	TradeType int `orm:"-"`
+	SourceType int `orm:"-"`
+	Balance int `orm:"-"`
+	PayStatus int `orm:"-"`
+	RefundStatus int `orm:"-"`
+	Craeted time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
+	RelatedUtlId int `orm:"-"`
+	WastageDetail string `orm:"-"`
+	ConsumeDetail string `orm:"-"`
+	Remark string `orm:"-"`
+	PayId string `orm:"-"`
+	PayInfo string `orm:"-"`
 }
 
 
 // user - N:N - wsid
 // UtlId - 1:N - wsid
 type WastageShare struct {
-	WsId int
-	UtlId int
-	FromUid int
-	ToUid int
-	Amount int
+	WsId int `orm:"-"`
+	UtlId int `orm:"-"`
+	FromUid int `orm:"-"`
+	ToUid int `orm:"-"`
+	Amount int `orm:"-"`
 
-	Craeted time.Time
-	Updated time.Time
-	Status int
+	Craeted time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
 }
 
 // Uid - 1:1 - UbId
 type UserBalance struct {
-	UbId int
-	Uid int
-	Balance int64 // cent
-	Craeted time.Time
-	Updated time.Time
-	Status int
+	UbId int `orm:"-"`
+	Uid int `orm:"-"`
+	Balance int64 `orm:"-"` // cent
+	Craeted time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
 }
 
 type RankCheckIn struct {
-	RciId int
-	Rank int
-	Uid int
-	Aid int
+	RciId int `orm:"-"`
+	Rank int `orm:"-"`
+	Uid int `orm:"-"`
+	Aid int `orm:"-"`
 	// 连续check次数
-	CheckInTimes int
-	Created time.Time
-	Updated time.Time
-	Status int
+	CheckInTimes int `orm:"-"`
+	Created time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
 }
 
 type RankAwardAmount struct {
-	RaaId int
-	Rank int
-	Uid int
-	Aid int
-	AwardAmount int
-	AwardTimes int
+	RaaId int `orm:"-"`
+	Rank int `orm:"-"`
+	Uid int `orm:"-"`
+	Aid int `orm:"-"`
+	AwardAmount int `orm:"-"`
+	AwardTimes int `orm:"-"`
 	// 连续check次数
-	CheckInTimes int
-	Created time.Time
-	Updated time.Time
-	Status int
+	CheckInTimes int `orm:"-"`
+	Created time.Time `orm:"-"`
+	Updated time.Time `orm:"-"`
+	Status int `orm:"-"`
 }

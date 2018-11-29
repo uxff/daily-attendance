@@ -8,20 +8,38 @@ import (
 	"github.com/astaxie/beego/validation"
 )
 
+const (
+	RoleAdmin = 1
+	//RoleManager = 2
+
+	FlagSuperPaid = 16
+	FlagPaid = 8
+	FlagRealnamed = 4
+	FlagPhoneVerified = 2
+	FlagEmailVerified = 1
+)
+
 type User struct {
-	Id            int64
+	Uid            int64	`orm:"pk;auto"`
 	Email         string    `orm:"size(64);unique" form:"Email" valid:"Required;Email"`
 	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MinSize(6)"`
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
 	Lastlogintime time.Time `orm:"type(datetime)" form:"-"`
 	Created       time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated       time.Time `orm:"auto_now;type(datetime)"`
-	IsEmailActivated bool
 	EmailActivated time.Time `orm:"type(datetime)"`
 	Lastloginip string `orm:"size(16)"`
 	Phone string `orm:"size(16)"`
+	PhoneActivated time.Time `orm:"type(datetime)"`
 	Nickname string `orm:"size(20)"`
+	Role 		int `orm:"-"`
+	//SocialFlag 	int
 }
+
+
+//func (u *User) Id() int64 {
+//	return  u.Uid
+//}
 
 func (u *User) Valid(v *validation.Validation) {
 	if u.Password != u.Repassword {
@@ -65,6 +83,10 @@ func (m *User) Delete() error {
 func Users() orm.QuerySeter {
 	var table User
 	return orm.NewOrm().QueryTable(table).OrderBy("-Id")
+}
+
+func (m *User) IsAdmin() bool {
+	return m.Role == RoleAdmin
 }
 
 func init() {

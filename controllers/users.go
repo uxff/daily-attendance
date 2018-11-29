@@ -7,7 +7,6 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/uxff/daily-attendance/lib"
 	"github.com/uxff/daily-attendance/models"
-	"github.com/astaxie/beego/logs"
 )
 
 type UsersController struct {
@@ -32,7 +31,7 @@ func (c *UsersController) Index() {
 func (c *UsersController) Login() {
 
 	if c.IsLogin {
-		logs.Debug("is login ?>?????")
+		//logs.Debug("is login ?>?????")
 		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
 		return
 	}
@@ -57,7 +56,7 @@ func (c *UsersController) Login() {
 	password := c.GetString("Password")
 
 	user, err := lib.Authenticate(email, password)
-	if err != nil || user.Id < 1 {
+	if err != nil || user.Uid < 1 {
 		flash.Warning(err.Error())
 		flash.Store(&c.Controller)
 		return
