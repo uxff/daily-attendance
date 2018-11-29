@@ -62,7 +62,7 @@ func (c *UsersController) Login() {
 		return
 	}
 
-	flash.Success("Success logged in")
+	flash.Success("登录成功")
 	flash.Store(&c.Controller)
 
 	c.SetLogin(user)
@@ -98,7 +98,7 @@ func (c *UsersController) Signup() {
 
 	u := &models.User{}
 	if err = c.ParseForm(u); err != nil {
-		flash.Error("Signup invalid!")
+		flash.Error("不合法注册!")
 		flash.Store(&c.Controller)
 		return
 	}
@@ -117,7 +117,7 @@ func (c *UsersController) Signup() {
 		return
 	}
 
-	flash.Success("Register user")
+	flash.Success("注册成功")
 	flash.Store(&c.Controller)
 
 	c.SetLogin(u)

@@ -2,14 +2,14 @@ package controllers
 
 import (
 	"fmt"
+	"time"
+	"math/rand"
 
 	"github.com/astaxie/beego"
 	"github.com/ikeikeikeike/gopkg/convert"
 	"github.com/uxff/daily-attendance/models"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/utils/captcha"
-	"time"
-	"math/rand"
 )
 
 // 初始化captcha

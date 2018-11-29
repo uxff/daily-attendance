@@ -82,7 +82,7 @@ func (m *User) Delete() error {
 
 func Users() orm.QuerySeter {
 	var table User
-	return orm.NewOrm().QueryTable(table).OrderBy("-Id")
+	return orm.NewOrm().QueryTable(table).OrderBy("-Uid")
 }
 
 func (m *User) IsAdmin() bool {
