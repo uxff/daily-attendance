@@ -73,7 +73,7 @@ const (
 // CheckInKey 1:1 CilId
 type CheckInLog struct {
 	CilId int `orm:"-"`
-	JalId int `orm:"-"` // needed?
+	//JalId int `orm:"-"` // needed?
 	Aid int `orm:"-"`
 	Uid int `orm:"-"`
 	CheckInKeyType string `orm:"-"`

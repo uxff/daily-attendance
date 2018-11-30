@@ -7,10 +7,10 @@
         </a>
       </div>
       <dl class="footer-nav">
-        <dt class="nav-title">健康资讯</dt>
+        <dt class="nav-title">关注健康</dt>
         <dd class="nav-item">
           <a href="#">
-            <span class="glyphicon glyphicon-credit-card"> 捐助</span>
+            <span class="glyphicon glyphicon-credit-card"> 健康资讯 </span>
           </a>
         </dd>
         <dd class="nav-item">
@@ -43,7 +43,17 @@
         <dt class="nav-title">联系方式</dt>
         <dd class="nav-item">
           <a href="#">
-            <span class='glyphicon glyphicon-comment'></span>
+            <span class='glyphicon glyphicon-comment'> 联系站长 </span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#">
+            <span class='glyphicon glyphicon-comment'> 微信 </span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#">
+            <span class='glyphicon glyphicon-comment'> QQ群: 12345678 </span>
           </a>
         </dd>
       </dl>

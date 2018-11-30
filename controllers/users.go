@@ -57,7 +57,7 @@ func (c *UsersController) Login() {
 
 	user, err := lib.Authenticate(email, password)
 	if err != nil || user.Uid < 1 {
-		flash.Warning(err.Error())
+		flash.Warning("登录失败，不正确的用户或密码 "+err.Error())
 		flash.Store(&c.Controller)
 		return
 	}
@@ -72,9 +72,9 @@ func (c *UsersController) Login() {
 
 func (c *UsersController) Logout() {
 	c.DelLogin()
-	flash := beego.NewFlash()
-	flash.Success("Success logged out")
-	flash.Store(&c.Controller)
+	//flash := beego.NewFlash()
+	//flash.Success("已成功退出")
+	//flash.Store(&c.Controller)
 
 	c.Ctx.Redirect(302, c.URLFor("UsersController.Login"))
 }

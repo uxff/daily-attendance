@@ -21,9 +21,6 @@
         <li><a href='{{urlfor "IndexController.Index"}}'>
           <span class="glyphicon glyphicon-heart"></span> 关注健康
         </a></li>
-        <li><a href='{{urlfor "IndexController.Index"}}'>
-          <span class="glyphicon glyphicon-list-alt"></span> 我的计划
-        </a></li>
         <li>
           <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
           <span class="glyphicon glyphicon-time"></span> 定制计划 <b class="caret"></b>
@@ -38,6 +35,9 @@
                 <li><a href="/">获得瓜分最多</a></li>
             </ul>
         </li>
+        <li><a href='{{urlfor "IndexController.Index"}}'>
+          <span class="glyphicon glyphicon-list-alt"></span> 我的计划
+        </a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
