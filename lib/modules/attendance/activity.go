@@ -1,18 +1,111 @@
 package attendance
 
-func ListActivities() {
+import (
+	"errors"
+
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/logs"
+	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
+	"time"
+)
+
+//var ormObj orm.Ormer
+
+func ListActivities() []*models.AttendanceActivity {
+	var activities []*models.AttendanceActivity
+	orm.NewOrm().QueryTable(&models.AttendanceActivity{Status:models.StatusNormal}).All(&activities)
+	return activities
+}
+
+func GetActivity(Aid int) *models.AttendanceActivity {
+	var ormObj = orm.NewOrm()
+	act := models.AttendanceActivity{Aid:Aid}
+	err := ormObj.Read(&act)
+	if err != nil {
+		logs.Error("load activity(%d) error:%v", Aid, err)
+		return nil
+	}
+
+	return &act
+}
+
+func AddActivity(name string, startTime, endTime time.Time, checkInRule string, needStep int, checkInPeriod byte,
+	creatorUid int, joinPrice int, loserWastagePercent float32) error {
+
+	if name == "" {
+		return errors.New("name cannot be null")
+	}
+
+	if endTime.Unix() >= startTime.Unix() {
+		return errors.New("endTime should not bigger than startTime")
+	}
+
+	if needStep <= 0 {
+		return errors.New("need step illegal")
+	}
+
+	act := models.AttendanceActivity{
+		Name:name,
+		ValidTimeStart:startTime.Format("2006-01-02 15:04:05"),
+		ValidTimeEnd:endTime.Format("2006-01-02 15:04:05"),
+		CheckInRule:checkInRule,
+		CheckInPeriod:checkInPeriod,
+		NeedStep:needStep,
+		JoinPrice:joinPrice,
+		CreatorUid:creatorUid,
+		LoserWastagePercent:loserWastagePercent,
+	}
+
+	var ormObj = orm.NewOrm()
+	_, err := ormObj.Insert(&act)
+	if err != nil {
+		logs.Error("inset jal error:%v", err)
+		return err
+	}
+
+	return nil
+}
+
+func StopActivity(Aid int) {
 
 }
 
-func GetActivity(aid int) {
+func UserJoinActivity(Aid, Uid, UtlId int) error {
 
-}
+	if UtlId <= 0 {
+		//logs.Error("")
+		return errors.New("UtlId cannot be 0")
+	}
 
-func AddActivity() {
+	if Aid <= 0 {
+		return errors.New("Aid cannot be 0")
+	}
 
-}
+	var ormObj = orm.NewOrm()
+	act := models.AttendanceActivity{Aid:Aid}
+	err := ormObj.Read(&act)
+	if err != nil {
+		logs.Error("cannot find aid(%d) in db: %v", Aid, err)
+		return err
+	}
 
-func UserJoinActivity() {
+	// add jal
+	jal := models.JoinActivityLog{
+		Aid:Aid,
+		Uid:Uid,
+		IsFinish:0,
+		RewardDispatched:0,
+		NeedStep:act.NeedStep,
+		JoinUtlId:UtlId,
+	}
+	_, err = ormObj.Insert(&jal)
+	if err != nil {
+		logs.Error("inset jal error:%v", err)
+		return err
+	}
 
+	//
+
+	return nil
 }
 

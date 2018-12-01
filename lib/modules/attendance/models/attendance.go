@@ -7,6 +7,11 @@ import (
 )
 
 const (
+	StatusNormal = 1
+	StatusDeleted = 99
+)
+
+const (
 	CheckInTypeHourly = 4
 	CheckInTypeDaily = 5
 	CheckInTypeMonthly = 7
