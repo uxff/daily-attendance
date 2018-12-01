@@ -4,6 +4,7 @@ import (
 	"time"
 
 	_ "github.com/uxff/daily-attendance/models"
+	_ "github.com/uxff/daily-attendance/lib/modules/attendance/models"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"

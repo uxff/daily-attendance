@@ -27,7 +27,7 @@
           </a>
             <ul class="dropdown-menu">
                 <li role="presentation" class="dropdown-header">计划介绍</li>
-                <li><a href="/">每日打卡</a></li>
+                <li><a href="/attendance">每日打卡</a></li>
                 <li><a href="/">瓜分气馁者</a></li>
                 <li role="presentation" class="divider"></li>
                 <li role="presentation" class="dropdown-header">排行</li>

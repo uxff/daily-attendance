@@ -12,9 +12,10 @@ const (
 	RoleAdmin = 1
 	//RoleManager = 2
 
-	FlagSuperPaid = 16
+	FlagSuperPaid = 0x800
 	FlagPaid = 8
 	FlagRealnamed = 4
+	FlagWechatVerified = 4
 	FlagPhoneVerified = 2
 	FlagEmailVerified = 1
 )
@@ -80,6 +81,11 @@ func (m *User) Delete() error {
 	return nil
 }
 
+func (t *User) TableEngine() string {
+	return "INNODB"
+}
+
+
 func Users() orm.QuerySeter {
 	var table User
 	return orm.NewOrm().QueryTable(table).OrderBy("-Uid")
@@ -88,6 +94,7 @@ func Users() orm.QuerySeter {
 func (m *User) IsAdmin() bool {
 	return m.Role == RoleAdmin
 }
+
 
 func init() {
 	orm.RegisterModelWithPrefix(

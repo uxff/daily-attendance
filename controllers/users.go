@@ -124,3 +124,12 @@ func (c *UsersController) Signup() {
 
 	c.Redirect(c.URLFor("UsersController.Index"), 303)
 }
+
+func (c *UsersController) Balance() {
+	c.TplName = "user/balance.tpl"
+}
+
+func (c *UsersController) Bonus() {
+	c.TplName = "user/bonus.tpl"
+}
+
