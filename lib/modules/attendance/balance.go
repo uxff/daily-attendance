@@ -18,7 +18,7 @@ func ListUserTradeLog(Uid int) []*models.UserTradeLog {
 	list := []*models.UserTradeLog{}
 
 	ormObj := orm.NewOrm()
-	ormObj.QueryTable(models.UserBalance{}).Filter("uid", Uid).All(&list)
+	ormObj.QueryTable(models.UserTradeLog{}).Filter("uid", Uid).All(&list)
 
 	return list
 }

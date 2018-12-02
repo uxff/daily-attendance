@@ -25,6 +25,7 @@ func UserCheckIn(Uid int, act *models.AttendanceActivity) error {
 
 	cirMap := Json2CheckInRule(act.CheckInRule)
 
+	// find out possible key
 	checkInKeyWill := ""
 	checkInKeyTypeWill := ""
 
