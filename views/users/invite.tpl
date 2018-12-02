@@ -8,7 +8,7 @@
             <li><a href="/user/index">基本资料</a></li>
             <li><a href="/user/balance">积分</a></li>
             <li><a href="/attendance/my">打卡</a></li>
-            <li><a href="/user/attendance">收益</a></li>
+            <li><a href="/user/bonus">收益</a></li>
             <li class="active"><a href="javascript:;">推广码</a></li>
         </ul>
         <h4>我的邀请码</h4>

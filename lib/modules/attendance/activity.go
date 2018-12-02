@@ -2,13 +2,13 @@ package attendance
 
 import (
 	"errors"
+	"fmt"
+	"time"
+	"encoding/json"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
-	"time"
-	"encoding/json"
-	"fmt"
 )
 
 //var ormObj orm.Ormer
@@ -56,16 +56,16 @@ func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInR
 	}
 
 	act := models.AttendanceActivity{
-		Name:name,
-		ValidTimeStart:startTime.Format("2006-01-02 15:04:05"),
-		ValidTimeEnd:endTime.Format("2006-01-02 15:04:05"),
-		CheckInRule:string(checkInRuleJson),
-		CheckInPeriod:int8(checkInPeriod),
-		NeedStep:needStep,
-		JoinPrice:joinPrice,
-		CreatorUid:creatorUid,
-		LoserWastagePercent:loserWastagePercent,
-		Status: models.StatusNormal,
+		Name:                name,
+		ValidTimeStart:      startTime.Format("2006-01-02 15:04:05"),
+		ValidTimeEnd:        endTime.Format("2006-01-02 15:04:05"),
+		CheckInRule:         string(checkInRuleJson),
+		CheckInPeriod:       int8(checkInPeriod),
+		BonusNeedStep:       needStep,
+		JoinPrice:           joinPrice,
+		CreatorUid:          creatorUid,
+		LoserWastagePercent: loserWastagePercent,
+		Status:              models.StatusNormal,
 	}
 
 	var ormObj = orm.NewOrm()
@@ -103,12 +103,12 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 
 	// add jal
 	jal := models.JoinActivityLog{
-		Aid:Aid,
-		Uid:Uid,
-		IsFinish:0,
-		RewardDispatched:0,
-		NeedStep:act.NeedStep,
-		JoinUtlId:UtlId,
+		Aid:              Aid,
+		Uid:              Uid,
+		IsFinish:         0,
+		RewardDispatched: 0,
+		BonusNeedStep:    act.BonusNeedStep,
+		JoinUtlId:        UtlId,
 	}
 	_, err = ormObj.Insert(&jal)
 	if err != nil {
@@ -119,5 +119,14 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	//
 
 	return nil
+}
+
+func UserActivityLog(Uid int) []*models.JoinActivityLog {
+	list := []*models.JoinActivityLog{}
+
+	ormObj := orm.NewOrm()
+	ormObj.QueryTable(models.JoinActivityLog{}).Filter("uid", Uid).All(&list)
+
+	return list
 }
 

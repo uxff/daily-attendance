@@ -4,6 +4,9 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
+	"encoding/json"
+	"github.com/astaxie/beego/logs"
+	"time"
 )
 
 const (
@@ -22,7 +25,15 @@ type CheckInRuleMap map[string]CheckInRule
 type CheckInRule struct {
 	//CheckInKey string `json:"checkinkey"`
 	TimeSpan string `json:"timespan,omitempty"`
+	TimeSpanMap []struct {
+		Start string
+		End string
+	}
 	DaySpan string `json:"dayspan,omitempty"`
+	DaySpanMap []struct {
+		Start string
+		End string
+	}
 }
 
 func (c *CheckInRuleMap) IsValid() bool {
@@ -72,6 +83,14 @@ func (c *CheckInRule) IsTimeSpanValid()  bool {
 			return false
 		}
 
+		c.TimeSpanMap = []struct{
+			Start string
+			End string
+		}{{
+			Start:fmt.Sprintf("%02d:%02d", startHour, startMin),
+			End:fmt.Sprintf("%02d:%02d", endHour, endMin),
+		}}
+
 		return true
 	}
 
@@ -103,8 +122,46 @@ func (c *CheckInRule) IsDaySpanValid() bool {
 			return false
 		}
 
+		c.DaySpanMap = []struct{
+			Start string
+			End string
+		}{{
+			Start:fmt.Sprintf("%02d", dayStart),
+			End:fmt.Sprintf("%02d", dayEnd),
+		}}
+
 		return true
 	}
 
 	return false
 }
+
+func (c *CheckInRule) IsInTimeSpan(t time.Time) bool {
+	hm := fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
+	for _, se := range c.TimeSpanMap {
+		if hm <= se.Start || se.End <= hm {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *CheckInRule) IsInDaySpan(t time.Time) bool {
+	day := fmt.Sprintf("%02d", t.Day())
+	for _, se := range c.DaySpanMap {
+		if day <= se.Start || se.End <= day {
+			return false
+		}
+	}
+	return true
+}
+
+func Json2CheckInRule(str string) CheckInRuleMap {
+	cir := CheckInRuleMap{}
+	err := json.Unmarshal([]byte(str), &cir)
+	if err != nil {
+		logs.Warn("err when Json2CheckInRule:%v", err)
+	}
+	return cir
+}
+

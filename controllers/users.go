@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/uxff/daily-attendance/lib"
 	"github.com/uxff/daily-attendance/models"
+	"github.com/uxff/daily-attendance/lib/modules/attendance"
 )
 
 type UsersController struct {
@@ -14,6 +15,11 @@ type UsersController struct {
 }
 
 func (c *UsersController) NestPrepare() {
+	// below code will in dead loop
+	//if !c.IsLogin {
+	//	c.Ctx.Redirect(302, c.LoginPath())
+	//	return
+	//}
 }
 
 // func (c *UsersController) NestFinish() {}
@@ -52,10 +58,9 @@ func (c *UsersController) Login() {
 		return
 	}
 
-	if c.GetString("_xsrf") != c.XSRFToken() {
+	if !c.CheckXSRFCookie() {
 		flash.Warning("页面过期，请刷新后再试")
 		flash.Store(&c.Controller)
-		c.Ctx.CheckXSRFCookie()
 		return
 	}
 
@@ -133,10 +138,48 @@ func (c *UsersController) Signup() {
 }
 
 func (c *UsersController) Balance() {
-	c.TplName = "user/balance.tpl"
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.LoginPath())
+		return
+	}
+
+	balance := attendance.GetUserBalance(c.Userinfo.Uid)
+
+	c.Data["balance"] = balance
+	c.Data["tradeLog"] = attendance.ListUserTradeLog(c.Userinfo.Uid)
+
+	c.TplName = "users/balance.tpl"
 }
 
 func (c *UsersController) Bonus() {
-	c.TplName = "user/bonus.tpl"
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.LoginPath())
+		return
+	}
+
+	bonusLog := attendance.ListUserBonusLog(c.Userinfo.Uid)
+	c.Data["bonusLog"] = bonusLog
+
+	c.TplName = "users/bonus.tpl"
+}
+
+func (c *UsersController) Wastage() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.LoginPath())
+		return
+	}
+
+	bonusLog := attendance.ListUserWastageLog(c.Userinfo.Uid)
+	c.Data["bonusLog"] = bonusLog
+
+	c.TplName = "users/bonus.tpl"
+}
+
+func (c *UsersController) Invite() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.LoginPath())
+		return
+	}
+	c.TplName = "users/invite.tpl"
 }
 

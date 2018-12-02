@@ -42,7 +42,7 @@
 
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
+          <a href="{{urlfor "UsersController.Index"}}" role="button" class="dropdown-toggle" data-hover="dropdown">
             <span class='glyphicon glyphicon-user'></span> 用户{{if .IsLogin}}({{.Userinfo.Email}}){{end}} <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">

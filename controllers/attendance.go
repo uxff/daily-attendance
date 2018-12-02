@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"html/template"
-	"github.com/astaxie/beego"
-	"github.com/uxff/daily-attendance/lib/modules/attendance"
 	"time"
 	"encoding/json"
+
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/uxff/daily-attendance/lib/modules/attendance"
 )
 
 type AttendanceController struct {
