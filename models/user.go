@@ -21,7 +21,7 @@ const (
 )
 
 type User struct {
-	Uid            int64	`orm:"pk;auto"`
+	Uid            int		`orm:"pk;auto"`
 	Email         string    `orm:"size(64);unique" form:"Email" valid:"Required;Email"`
 	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MinSize(6)"`
 	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`

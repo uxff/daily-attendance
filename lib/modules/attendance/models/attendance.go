@@ -17,12 +17,6 @@ const (
 	CheckInTypeMonthly = 7
 )
 
-const (
-	// CheckInKeyType extendible
-	CheckInKeyWorkUp = "WORKUP"
-	CheckInKeyWorkOff = "WORKOFF"
-	CheckInKeyHealthDaily = "HEALTHD"
-)
 //
 type AttendanceActivity struct {
 	Aid int	`orm:"pk;auto"`
@@ -36,11 +30,11 @@ type AttendanceActivity struct {
 	// rule for monthly report:[{"REPORTM":{"dayspan":["01","02"]}}]
 	CheckInRule string `orm:"size(4095)"` // json, rule for checkin
 	NeedStep int `orm:"type(int);default(0)"`
-	CheckInPeriod byte `orm:"type(tinyint)"` // Daily Hourly Monthly
+	CheckInPeriod int8 `orm:"type(tinyint)"` // Daily Hourly Monthly
 	CreatorUid int `orm:"type(int);default(0)"`
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status byte `orm:"type(tinyint);default(1)"`
+	Status int8 `orm:"type(tinyint);default(1)"`
 	JoinPrice int	`orm:"type(int);default(0)"`
 	JoinedUserCount int `orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all

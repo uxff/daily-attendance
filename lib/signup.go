@@ -7,7 +7,7 @@ import (
 	"github.com/ikeikeikeike/gopkg/convert"
 )
 
-func SignupUser(u *models.User) (int64, error) {
+func SignupUser(u *models.User) (int, error) {
 	var (
 		err error
 		msg string

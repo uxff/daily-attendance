@@ -52,6 +52,13 @@ func (c *UsersController) Login() {
 		return
 	}
 
+	if c.GetString("_xsrf") != c.XSRFToken() {
+		flash.Warning("页面过期，请刷新后再试")
+		flash.Store(&c.Controller)
+		c.Ctx.CheckXSRFCookie()
+		return
+	}
+
 	email := c.GetString("Email")
 	password := c.GetString("Password")
 

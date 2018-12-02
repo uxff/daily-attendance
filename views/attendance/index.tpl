@@ -29,7 +29,7 @@
                             <p>参与价格：<span class="label label-info">50 积分</span></p>
                             <p>预计分红：<span class="label label-success">3.5 积分/日</span></p>
                             <p>
-                                &nbsp;<a class="btn btn-primary" type="button" href="javascript:;">&nbsp;立即参与&nbsp;</a>
+                                &nbsp;<a class="btn btn-primary" type="button" href="/attendance/add">&nbsp;立即参与&nbsp;</a>
                                 &nbsp;<a class="btn btn-primary" type="button" href="javascript:;">&nbsp;查看排行&nbsp;</a>
                             </p>
                             <p></p>
@@ -59,7 +59,7 @@
                             <p>公共奖池：<span class="label label-danger">32991积分</span></p>
                             <p>参与价格：<span class="label label-info">50积分</span></p>
                             <p>预计分红：<span class="label label-success">3.5积分/日</span></p>
-                            <p>&nbsp;&nbsp;<a class="btn btn-primary col-lg-3 col-sm-6" type="button" href="javascript:;">立即参与</a></p>
+                            <p>&nbsp;&nbsp;<a class="btn btn-primary col-lg-3 col-sm-6" type="button" href="/attendance/add">立即参与</a></p>
                             <p>&nbsp;</p>
                         </div>
                     </div>

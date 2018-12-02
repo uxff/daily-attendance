@@ -7,6 +7,8 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 	"time"
+	"encoding/json"
+	"fmt"
 )
 
 //var ormObj orm.Ormer
@@ -29,35 +31,45 @@ func GetActivity(Aid int) *models.AttendanceActivity {
 	return &act
 }
 
-func AddActivity(name string, startTime, endTime time.Time, checkInRule string, needStep int, checkInPeriod byte,
+func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInRuleMap, needStep int, checkInPeriod byte,
 	creatorUid int, joinPrice int, loserWastagePercent float32) error {
 
 	if name == "" {
 		return errors.New("name cannot be null")
 	}
 
-	if endTime.Unix() >= startTime.Unix() {
-		return errors.New("endTime should not bigger than startTime")
+	if endTime.Unix() <= startTime.Unix() {
+		return errors.New("endTime should not smaller than startTime")
 	}
 
 	if needStep <= 0 {
-		return errors.New("need step illegal")
+		return errors.New("needStep is illegal")
+	}
+
+	if !checkInRule.IsValid() {
+		return fmt.Errorf("checkInRule invalid:%v", checkInRule)
+	}
+
+	checkInRuleJson, err := json.Marshal(&checkInRule)
+	if err != nil {
+		return fmt.Errorf("when json.marshal checkInRule:%v", err)
 	}
 
 	act := models.AttendanceActivity{
 		Name:name,
 		ValidTimeStart:startTime.Format("2006-01-02 15:04:05"),
 		ValidTimeEnd:endTime.Format("2006-01-02 15:04:05"),
-		CheckInRule:checkInRule,
-		CheckInPeriod:checkInPeriod,
+		CheckInRule:string(checkInRuleJson),
+		CheckInPeriod:int8(checkInPeriod),
 		NeedStep:needStep,
 		JoinPrice:joinPrice,
 		CreatorUid:creatorUid,
 		LoserWastagePercent:loserWastagePercent,
+		Status: models.StatusNormal,
 	}
 
 	var ormObj = orm.NewOrm()
-	_, err := ormObj.Insert(&act)
+	_, err = ormObj.Insert(&act)
 	if err != nil {
 		logs.Error("inset jal error:%v", err)
 		return err
