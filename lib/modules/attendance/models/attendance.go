@@ -12,9 +12,13 @@ const (
 )
 
 const (
+	CheckInPeriodSecondly = 2	// deprecated
+	CheckInPeriodMinutely = 3	// deprecated
 	CheckInPeriodHourly = 4
 	CheckInPeriodDaily = 5
+	CheckInPeriodWeekly = 6 	// unimplement
 	CheckInPeriodMonthly = 7
+	CheckInPeriodYearly = 8 // deprecated
 )
 
 // its a checkin project
@@ -68,6 +72,7 @@ type JoinActivityLog struct {
 	IsFinish      byte      `orm:"type(tinyint);default(0)"` // is finishing, w
 	RewardDispatched byte `orm:"type(tinyint);default(0)"`
 	JoinUtlId int `orm:"type(int);default(0)"`
+	JoinPrice int `orm:"type(int);default(0)"`
 	Status byte `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
 	//IsMissed int // is wasted
 }

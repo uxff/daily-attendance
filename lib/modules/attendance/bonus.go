@@ -33,7 +33,7 @@ func ShareMissedAttendance(jal *models.JoinActivityLog) {
 	activities := ListActivities()
 	for _, act := range activities {
 		missedJals := ListMissedJal(act.Aid)
-		successJals := ListSuccessJal(act.Aid)
+		successJals := ListAchievedJal(act.Aid)
 		for _, mjal := range missedJals {
 			ShareMissedJal(mjal, successJals)
 		}
@@ -47,7 +47,7 @@ func ListMissedJal(Aid int) []*models.JoinActivityLog {
 
 func ShareMissedJal(missedJal *models.JoinActivityLog, successJals[]*models.JoinActivityLog) error {
 	//goldsWillShare := missedJal.JoinUtlId.Price
-	//allSuccessFeederGoods := GetAllSuccessorGolds()
+	//allAchievedFeederGoods := GetAllAchievedGolds()
 	//
 	// for _, sjal := range successJals {
 	//    goods := goldsWillShare * (sjal.JoinUtlId.Price*sjal.Step/allSuccessFeederGoods)
@@ -56,6 +56,6 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals[]*models.Join
 	return nil
 }
 
-func ListSuccessJal(Aid int)[]*models.JoinActivityLog {
+func ListAchievedJal(Aid int)[]*models.JoinActivityLog {
 	return nil
 }

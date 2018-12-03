@@ -6,7 +6,9 @@
     <div class="row">
     {{template "alert.tpl" .}}
         <h2><b>打卡方案介绍</b></h2>
-        <p><span class="label label-success">为了健康，为了自己，坚持打卡，告别慵懒</span></p>
+        <p><span class="label label-success">为了健康，为了自己，坚持打卡，告别慵懒</span>
+            <span class="label label-info"><a href="/attendance/add">创建活动</a></span>
+        </p>
 
         <div class="panel panel-success">
             <div class="panel-heading">打卡方案1-早操锻炼 </div>

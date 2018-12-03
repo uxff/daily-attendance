@@ -31,7 +31,7 @@ func GetActivity(Aid int) *models.AttendanceActivity {
 	return &act
 }
 
-func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInRuleMap, needStep int, checkInPeriod byte,
+func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInRuleMap, needStep int, checkInPeriod int8,
 	creatorUid int, joinPrice int, loserWastagePercent float32) error {
 
 	if name == "" {
@@ -46,7 +46,7 @@ func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInR
 		return errors.New("needStep is illegal")
 	}
 
-	if !checkInRule.IsValid() {
+	if !checkInRule.IsValid(checkInPeriod) {
 		return fmt.Errorf("checkInRule invalid:%v", checkInRule)
 	}
 
@@ -60,7 +60,7 @@ func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInR
 		ValidTimeStart:      startTime.Format("2006-01-02 15:04:05"),
 		ValidTimeEnd:        endTime.Format("2006-01-02 15:04:05"),
 		CheckInRule:         string(checkInRuleJson),
-		CheckInPeriod:       int8(checkInPeriod),
+		CheckInPeriod:       checkInPeriod,
 		BonusNeedStep:       needStep,
 		JoinPrice:           joinPrice,
 		CreatorUid:          creatorUid,

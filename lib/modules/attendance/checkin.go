@@ -17,9 +17,10 @@ func UserCheckIn(Uid int, act *models.AttendanceActivity) error {
 	}
 
 	todayCheckInLog := []*models.CheckInLog{}
+	now := time.Now()
 
 	ormObj := orm.NewOrm()
-	today, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02 00:00:00"))
+	today, _ := time.Parse("2006-01-02 15:04:05", now.Format("2006-01-02 00:00:00"))
 
 	logs.Debug("today=%v", today)
 
@@ -30,24 +31,68 @@ func UserCheckIn(Uid int, act *models.AttendanceActivity) error {
 	checkInKeyTypeWill := ""
 
 	switch act.CheckInPeriod {
+	case models.CheckInPeriodSecondly:
+		for cik, _ := range cirMap {
+			checkInKeyTypeWill = cik
+			checkInKeyWill = fmt.Sprintf("%s-%d", cik, now.Unix())
+			break
+		}
+
+	case models.CheckInPeriodMinutely:
+		for cik, rule := range cirMap {
+			if rule.IsInSecondSpan(now) {
+				// not in checkIn timespan
+				checkInKeyTypeWill = cik
+				checkInKeyWill = fmt.Sprintf("%s-%04d%02d%02d-%02d%02d", cik,
+					now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute())
+				break
+			}
+		}
+
 	case models.CheckInPeriodHourly:
+		for cik, rule := range cirMap {
+			if rule.IsInMinuteSpan(now) {
+				// not in checkIn timespan
+				checkInKeyTypeWill = cik
+				checkInKeyWill = fmt.Sprintf("%s-%04d%02d%02d-%02d", cik,
+					now.Year(), now.Month(), now.Day(), now.Hour())
+				break
+			}
+		}
 
 	case models.CheckInPeriodDaily:
 		for cik, rule := range cirMap {
-			if rule.TimeSpan == "" {
-				//return errors.New("act has no TimeSpan when its CheckInPeriodDaily")
-				continue
-			}
-			if rule.IsInTimeSpan(time.Now()) {
+			if rule.IsInHourSpan(now) {
 				// not in checkIn timespan
-				//return errors.New()
 				checkInKeyTypeWill = cik
-				checkInKeyWill = fmt.Sprintf("%s-%d%d", cik, time.Now().Year(), time.Now().Day())
+				checkInKeyWill = fmt.Sprintf("%s-%04d%02d%02d", cik,
+					now.Year(), now.Month(), now.Day())
+				break
+			}
+		}
+	case models.CheckInPeriodWeekly:
+		for cik, rule := range cirMap {
+			if rule.IsInWeekdaySpan(now) {
+				// not in checkIn timespan
+				checkInKeyTypeWill = cik
+				checkInKeyWill = fmt.Sprintf("%s-%04dw%02d", cik,
+					now.Year(), now.YearDay()-int(now.Weekday()))
 				break
 			}
 		}
 	case models.CheckInPeriodMonthly:
+		for cik, rule := range cirMap {
+			if rule.IsInDaySpan(time.Now()) {
+				// not in checkIn timespan
+				checkInKeyTypeWill = cik
+				checkInKeyWill = fmt.Sprintf("%s-%04dm%02d", cik,
+					now.Year(), now.Month())
+				break
+			}
+		}
 	}
+
+	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s", checkInKeyTypeWill, checkInKeyWill)
 
 	if checkInKeyWill == "" {
 		return fmt.Errorf("not in checkIn timespan, act.checkInRule:%s", act.CheckInRule)

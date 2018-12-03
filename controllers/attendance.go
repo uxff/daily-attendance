@@ -76,7 +76,7 @@ func (c *AttendanceController) Add() {
 	}
 	logs.Warn("will create activity:%v %v %v %v %v %v", name, startTime, endTime, needStep, checkInRuleMap, wastagePercent)
 
-	err = attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, byte(checkInPeriod), c.Userinfo.Uid, joinPrice, float32(wastagePercent))
+	err = attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, float32(wastagePercent))
 	if err != nil {
 		flash.Warning("创建活动失败 "+ err.Error())
 		flash.Store(&c.Controller)

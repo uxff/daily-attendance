@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego/logs"
 	"time"
+	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 	CheckInKeyHealthDaily = "HEALTHD"
 )
 
-// rule for daily work:[{"WORKUP":{"timespan":"00:00-10:00"]}},{"WORKOFF":{"timespan":"18:00-23:59}}]
+// rule for daily work:[{"WORKUP":{"timespan":"00:00-10:00"}},{"WORKOFF":{"timespan":"18:00-23:59}}]
 // rule for daily health:[{"HEALTH":{"timespan":"06:00-09:00"}}]
 // rule for monthly report:[{"REPORTM":{"dayspan":"01-02"}}]
 
@@ -25,29 +26,43 @@ type CheckInRuleMap map[string]CheckInRule
 type CheckInRule struct {
 	//CheckInKey string `json:"checkinkey"`
 	TimeSpan string `json:"timespan,omitempty"`
-	TimeSpanMap []struct {
+	TimeSpanMap struct {
 		Start string
 		End string
 	}
 	DaySpan string `json:"dayspan,omitempty"`
-	DaySpanMap []struct {
+	DaySpanMap struct {
 		Start string
 		End string
 	}
 }
 
-func (c *CheckInRuleMap) IsValid() bool {
+func (c *CheckInRuleMap) IsValid(checkInPeriodType int8) bool {
 	if c == nil {
 		return false
 	}
 
 	for _, rule := range *c {
-		if rule.TimeSpan != "" {
-			if !rule.IsTimeSpanValid() {
+		switch checkInPeriodType {
+		case models.CheckInPeriodSecondly:
+			return true
+		case models.CheckInPeriodMinutely:
+			if !rule.IsSecondSpanValid() {
 				return false
 			}
-		}
-		if rule.DaySpan != "" {
+		case models.CheckInPeriodHourly:
+			if !rule.IsMinuteSpanValid() {
+				return false
+			}
+		case models.CheckInPeriodDaily:
+			if !rule.IsHourSpanValid() {
+				return false
+			}
+		case models.CheckInPeriodWeekly:
+			if !rule.IsWeekdaySpanValid() {
+				return false
+			}
+		case models.CheckInPeriodMonthly:
 			if !rule.IsDaySpanValid() {
 				return false
 			}
@@ -57,7 +72,17 @@ func (c *CheckInRuleMap) IsValid() bool {
 	return true
 }
 
-func (c *CheckInRule) IsTimeSpanValid()  bool {
+func (c *CheckInRule) IsSecondSpanValid() bool {
+	// use dayspan format
+	return c.IsDaySpanValid()
+}
+
+func (c *CheckInRule) IsMinuteSpanValid() bool {
+	// use timespan format
+	return c.IsHourSpanValid()
+}
+
+func (c *CheckInRule) IsHourSpanValid()  bool {
 	if c.TimeSpan != "" {
 		timeSpanStartAndEnd := strings.Split(c.TimeSpan, "-")
 		if len(timeSpanStartAndEnd) < 2 {
@@ -83,18 +108,24 @@ func (c *CheckInRule) IsTimeSpanValid()  bool {
 			return false
 		}
 
-		c.TimeSpanMap = []struct{
+		c.TimeSpanMap = struct{
 			Start string
 			End string
-		}{{
+		}{
 			Start:fmt.Sprintf("%02d:%02d", startHour, startMin),
 			End:fmt.Sprintf("%02d:%02d", endHour, endMin),
-		}}
+		}
 
 		return true
 	}
 
-	return false
+	return true // no limit
+}
+
+
+func (c *CheckInRule) IsWeekdaySpanValid() bool {
+	// use timespan format
+	return c.IsDaySpanValid()
 }
 
 func (c *CheckInRule) IsDaySpanValid() bool {
@@ -122,38 +153,58 @@ func (c *CheckInRule) IsDaySpanValid() bool {
 			return false
 		}
 
-		c.DaySpanMap = []struct{
+		c.DaySpanMap = struct{
 			Start string
 			End string
-		}{{
+		}{
 			Start:fmt.Sprintf("%02d", dayStart),
 			End:fmt.Sprintf("%02d", dayEnd),
-		}}
+		}
 
 		return true
 	}
 
+	return true // no limit
+}
+
+func (c *CheckInRule) IsInSecondSpan(t time.Time) bool {
+	hm := fmt.Sprintf("%02d", t.Second())
+	if c.DaySpanMap.Start <= hm && hm <= c.DaySpanMap.End {
+		return true
+	}
 	return false
 }
 
-func (c *CheckInRule) IsInTimeSpan(t time.Time) bool {
-	hm := fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
-	for _, se := range c.TimeSpanMap {
-		if hm <= se.Start || se.End <= hm {
-			return false
-		}
+func (c *CheckInRule) IsInMinuteSpan(t time.Time) bool {
+	hm := fmt.Sprintf("%02d:%02d", t.Minute(), t.Second())
+	if c.TimeSpanMap.Start <= hm && hm <= c.TimeSpanMap.End {
+		return true
 	}
-	return true
+	return false
+}
+
+func (c *CheckInRule) IsInHourSpan(t time.Time) bool {
+	hm := fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
+	if c.TimeSpanMap.Start <= hm && hm <= c.TimeSpanMap.End {
+		return true
+	}
+	return false
 }
 
 func (c *CheckInRule) IsInDaySpan(t time.Time) bool {
-	day := fmt.Sprintf("%02d", t.Day())
-	for _, se := range c.DaySpanMap {
-		if day <= se.Start || se.End <= day {
-			return false
-		}
+	hm := fmt.Sprintf("%02d", t.Day())
+	if c.DaySpanMap.Start <= hm && hm <= c.DaySpanMap.End {
+		return true
 	}
-	return true
+	return false
+}
+
+func (c *CheckInRule) IsInWeekdaySpan(t time.Time) bool {
+	hm := fmt.Sprintf("%02d", t.Weekday())
+	if c.DaySpanMap.Start <= hm && hm <= c.DaySpanMap.End {
+		return true
+	}
+	return false
 }
 
 func Json2CheckInRule(str string) CheckInRuleMap {
