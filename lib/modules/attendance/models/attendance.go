@@ -44,9 +44,10 @@ type AttendanceActivity struct {
 	Updated time.Time `orm:"auto_now;type(datetime)"`
 	Status int8 `orm:"type(tinyint);default(1)"`
 	JoinPrice int	`orm:"type(int);default(0)"`
-	JoinedUserCount int `orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
+	JoinedUserCount int `orm:"type(int);default(0)"`
+	JoinedGoldsCount int `orm:"type(int);default(0)"`
 
 	// use Wasting Rule?
 	//BonusRule string // use Bonus Rule?

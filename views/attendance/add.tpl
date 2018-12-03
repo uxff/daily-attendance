@@ -44,7 +44,15 @@
                         <div class="col-md-4">
                             <input type="text" class="form-control" name="checkInRule" placeholder="请输入规则" value='{"HEALTH":{"timespan":"06:00-09:00"}}'>
                         </div>
-                        <p class="help-block">打卡规则举例:{"HEALTH":{"timespan":"06:00-09:00"}}</p>
+
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-12 col-md-offset-0">
+
+                        <p >健康打卡规则举例:{"HEALTH":{"timespan":"06:00-09:00"}}</p>
+                        <p >上班打卡规则举例:{"WORKUP":{"timespan":"00:00-10:00"},"WORKOFF":{"timespan":"18:00-23:59"}}</p>
+                        </div>
+
                     </div>
                     <div class="form-group row">
                         <div class="col-md-4">

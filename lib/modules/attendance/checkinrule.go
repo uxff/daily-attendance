@@ -17,7 +17,7 @@ const (
 	CheckInKeyHealthDaily = "HEALTHD"
 )
 
-// rule for daily work:[{"WORKUP":{"timespan":"00:00-10:00"}},{"WORKOFF":{"timespan":"18:00-23:59}}]
+// rule for daily work:{"WORKUP":{"timespan":"00:00-10:00"},"WORKOFF":{"timespan":"18:00-23:59"}}
 // rule for daily health:[{"HEALTH":{"timespan":"06:00-09:00"}}]
 // rule for monthly report:[{"REPORTM":{"dayspan":"01-02"}}]
 

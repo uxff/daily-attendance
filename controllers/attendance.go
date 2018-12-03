@@ -21,6 +21,9 @@ func (c *AttendanceController) NestPrepare() {
 
 func (c *AttendanceController) Index() {
 
+	activities := attendance.ListActivities()
+	c.Data["activities"] = activities
+
 	c.TplName = "attendance/index.tpl"
 }
 

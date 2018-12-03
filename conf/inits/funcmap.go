@@ -56,6 +56,13 @@ func init() {
 		return runewidth.Truncate(in, length, "...")
 	})
 
+	beego.AddFuncMap("mod", func(big int, lit int, zeroEcho, nonZeroEcho string) string {
+		if lit > 0 && big % lit == 0 {
+			return zeroEcho
+		}
+		return nonZeroEcho
+	})
+
 	beego.AddFuncMap("noname", func(in string) string {
 		if in == "" {
 			return "(未入力)"
