@@ -32,6 +32,8 @@ func (c *AttendanceController) Project() {
 }
 
 func (c *AttendanceController) Join() {
+	c.TplName = "attendance/join.tpl"
+
 	aid, _ := c.GetInt("aid")
 
 	flash := beego.NewFlash()
@@ -49,7 +51,6 @@ func (c *AttendanceController) Join() {
 
 	}
 
-	c.TplName = "attendance/join.tpl"
 }
 
 func (c *AttendanceController) Add() {
