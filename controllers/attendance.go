@@ -32,7 +32,22 @@ func (c *AttendanceController) Project() {
 }
 
 func (c *AttendanceController) Join() {
+	aid, _ := c.GetInt("aid")
 
+	flash := beego.NewFlash()
+	if aid == 0 {
+		flash.Warning("aid不存在")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	err := attendance.UserJoinActivity(aid, c.Userinfo.Uid, 0)
+	if err != nil {
+		flash.Warning("参与活动%d失败：%v", aid, err)
+		flash.Store(&c.Controller)
+		return
+
+	}
 }
 
 func (c *AttendanceController) Add() {

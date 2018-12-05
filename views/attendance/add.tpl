@@ -51,6 +51,7 @@
 
                         <p >健康打卡规则举例:{"HEALTH":{"timespan":"06:00-09:00"}}</p>
                         <p >上班打卡规则举例:{"WORKUP":{"timespan":"00:00-10:00"},"WORKOFF":{"timespan":"18:00-23:59"}}</p>
+                        <p >月报打卡规则举例:{"REPROT":{"dayspan":"01-05"}}</p>
                         </div>
 
                     </div>
@@ -61,9 +62,10 @@
                         <div class="col-md-4">
                             <input type="text" class="form-control" style="width: 80px;display: inline" name="needStep" placeholder="请输入天数" value="5">
                             <select class="form-control" name="checkInPeriod" style="width: 80px;display: inline">
-                                <option value="1">小时</option>
-                                <option value="2" selected>天</option>
-                                <option value="3">月</option>
+                                <option value="3">分钟</option>
+                                <option value="4">小时</option>
+                                <option value="5" selected>天</option>
+                                <option value="6">月</option>
                             </select>
                         </div>
                     </div>
@@ -72,7 +74,7 @@
                             <label for="joinPrice">参与需要的押金</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" style="width: 80px;display: inline" id="joinPrice" placeholder="请输入积分" value="50">积分
+                            <input type="text" class="form-control" style="width: 80px;display: inline" name="joinPrice" placeholder="请输入积分" value="50">积分
                         </div>
                     </div>
                     <div class="form-group row">
@@ -80,7 +82,7 @@
                             <label for="wastagePercent">放弃坚持后，押金扣除比例</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" style="width: 80px;display: inline" id="wastagePercent" placeholder="请输入比例" value="50">%
+                            <input type="text" class="form-control" style="width: 80px;display: inline" name="wastagePercent" placeholder="请输入比例" value="50">%
                         </div>
                     </div>
                     {{.xsrfdata}}
