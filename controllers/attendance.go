@@ -48,6 +48,8 @@ func (c *AttendanceController) Join() {
 		return
 
 	}
+
+	c.TplName = "attendance/join.tpl"
 }
 
 func (c *AttendanceController) Add() {
