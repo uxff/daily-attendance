@@ -46,7 +46,7 @@ type AttendanceActivity struct {
 	JoinPrice int	`orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
-	JoinedUserCount int `orm:"type(int);default(0)"`
+	JoinedUserCount  int `orm:"type(int);default(0)"`
 	JoinedGoldsCount int `orm:"type(int);default(0)"`
 
 	// use Wasting Rule?
@@ -57,7 +57,13 @@ type AttendanceActivity struct {
 }
 
 
-
+const (
+	JalStatusNormal = 1
+	JalStatusAchieving = 2 // more than 5 days
+	JalStatusMissed = 3 // disachived, missed, same as wasted
+	JalStatusStopped = 4 // stopped by user manual
+	JalStatusShared = 5 //
+)
 // unique (user+aid+(status=1))
 // user - 1:N - jal
 type JoinActivityLog struct {
@@ -70,11 +76,11 @@ type JoinActivityLog struct {
 	BonusNeedStep int       `orm:"type(int);default(0)"`
 	Step          int       `orm:"type(int);default(0)"`
 	LastStepDate  string    `orm:"time(datetime)"` // needed?
-	IsFinish      byte      `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched byte `orm:"type(tinyint);default(0)"`
+	IsFinish      int8      `orm:"type(tinyint);default(0)"` // is finishing, w
+	RewardDispatched int8 `orm:"type(tinyint);default(0)"`
 	JoinUtlId int `orm:"type(int);default(0)"`
 	JoinPrice int `orm:"type(int);default(0)"`
-	Status byte `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	Status int8 `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
 	//IsMissed int // is wasted
 }
 
@@ -95,7 +101,7 @@ type CheckInLog struct {
 	CheckInKey string `orm:"size(32)"`	// unique of a user
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status byte `orm:"type(tinyint);default(1)"`
+	Status int8 `orm:"type(tinyint);default(1)"`
 }
 
 const (
@@ -112,6 +118,11 @@ const (
 	PayStatusNone = 1
 	PayStatusSuccess = 2
 	PayStatusFail = 3
+)
+
+const (
+	UserTradePlus = 1
+	UserTradeMinus = -1
 )
 
 // user - 1:N - utl

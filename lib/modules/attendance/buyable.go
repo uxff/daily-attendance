@@ -18,7 +18,7 @@ func (b *BuyableAttendanceActivity) GetName() string {
 	return b.AttendanceActivity.Name
 }
 
-func (b *BuyableAttendanceActivity) GetStoreNum() int {
+func (b *BuyableAttendanceActivity) GetStoredNum() int {
 	return 1
 }
 func (b *BuyableAttendanceActivity) OnOrderCreate(Uid, UtlId, num int) {
@@ -30,7 +30,7 @@ func (b *BuyableAttendanceActivity) OnBuySuccess(Uid, UtlId, num int) {
 func (b *BuyableAttendanceActivity) OnRefund(Uid, RefundUtlId, num int) {
 }
 
-func ActivityToProduct(act *models.AttendanceActivity) BuyableObject {
+func ActivityToProduct(act *models.AttendanceActivity) *BuyableAttendanceActivity {
 	return &BuyableAttendanceActivity{AttendanceActivity:act}
 }
 

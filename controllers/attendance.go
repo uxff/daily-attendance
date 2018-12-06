@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/uxff/daily-attendance/lib/modules/attendance"
+	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
 type AttendanceController struct {
@@ -32,6 +33,11 @@ func (c *AttendanceController) Project() {
 }
 
 func (c *AttendanceController) Join() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.URLFor("AttendanceController.Index"))
+		return
+	}
+
 	c.TplName = "attendance/join.tpl"
 
 	aid, _ := c.GetInt("aid")
@@ -50,20 +56,28 @@ func (c *AttendanceController) Join() {
 		return
 	}
 
+	// 查看已经参与的活动
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, models.JalStatusAchieving)
+
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
 	c.Data["act"] = act
-	if !c.Ctx.Input.IsPost() {
 
+	if !c.Ctx.Input.IsPost() {
+		c.Data["jals"] = jals
 		return
 	}
 
 	if !c.CheckXSRFCookie() {
+		flash.Warning("页面过期，请刷新后重试")
+		flash.Store(&c.Controller)
+		return
 	}
 
 	utlId := 0
 	var err error
 	if act.JoinPrice>0 {
-		utlId, err = attendance.Consume(c.Userinfo.Uid, attendance.ActivityToProduct(act), 1)
+		actProduct := attendance.ActivityToProduct(act)
+		utlId, err = attendance.Consume(c.Userinfo.Uid, actProduct, 1)
 		if err != nil {
 			flash.Warning("参与失败：%v", err)
 			flash.Store(&c.Controller)
@@ -79,7 +93,7 @@ func (c *AttendanceController) Join() {
 		return
 	}
 
-	flash.Success("参与活动%d成功", aid)
+	flash.Success("参与活动%s(%d)成功", act.Name, aid)
 	flash.Store(&c.Controller)
 }
 

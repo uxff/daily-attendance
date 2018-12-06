@@ -56,13 +56,13 @@ func Consume(Uid int,  p BuyableObject, num int) ( int ,  error) {
 		SourceType:1,
 		Balance:0,
 		PayStatus:models.PayStatusSuccess,
-		PlusMinus:-1,
+		PlusMinus:models.UserTradeMinus,
 		Status:models.StatusNormal,
 		RefundStatus:0,
 		Remark:p.GetName(),
 	}
 
-	if p.GetStoredNum()>=num {
+	if p.GetStoredNum()<num {
 		logs.Error("no enough store of pid:%d( %s), need %d, remain %d", p.GetProductId(), p.GetName(), num, p.GetStoredNum())
 		return 0, fmt.Errorf("no enough store of pid:%d( %s), need %d, remain %d", p.GetProductId(), p.GetName(), num, p.GetStoredNum())
 	}

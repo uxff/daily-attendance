@@ -121,11 +121,15 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	return nil
 }
 
-func UserActivityLog(Uid int) []*models.JoinActivityLog {
+func ListUserActivityLog(Uid int, status int8) []*models.JoinActivityLog {
 	list := []*models.JoinActivityLog{}
 
 	ormObj := orm.NewOrm()
-	ormObj.QueryTable(models.JoinActivityLog{}).Filter("uid", Uid).All(&list)
+	filter := ormObj.QueryTable(models.JoinActivityLog{}).Filter("uid", Uid)
+	if status > 0 {
+		filter.Filter("status", status)
+	}
+	filter.All(&list)
 
 	return list
 }
