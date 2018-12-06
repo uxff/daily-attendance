@@ -79,6 +79,8 @@ func (c *AttendanceController) Join() {
 		return
 	}
 
+	flash.Success("参与活动%d成功", aid)
+	flash.Store(&c.Controller)
 }
 
 func (c *AttendanceController) Add() {
