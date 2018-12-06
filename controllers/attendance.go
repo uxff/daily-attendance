@@ -38,17 +38,45 @@ func (c *AttendanceController) Join() {
 
 	flash := beego.NewFlash()
 	if aid == 0 {
+		flash.Warning("没有指定aid")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	act := attendance.GetActivity(aid)
+	if act == nil {
 		flash.Warning("aid不存在")
 		flash.Store(&c.Controller)
 		return
 	}
 
-	err := attendance.UserJoinActivity(aid, c.Userinfo.Uid, 0)
+	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
+	c.Data["act"] = act
+	if !c.Ctx.Input.IsPost() {
+
+		return
+	}
+
+	if !c.CheckXSRFCookie() {
+	}
+
+	utlId := 0
+	var err error
+	if act.JoinPrice>0 {
+		utlId, err = attendance.Consume(c.Userinfo.Uid, attendance.ActivityToProduct(act), 1)
+		if err != nil {
+			flash.Warning("参与失败：%v", err)
+			flash.Store(&c.Controller)
+			return
+		}
+		logs.Warn("交易成功:utlId:%d", utlId)
+	}
+
+	err = attendance.UserJoinActivity(aid, c.Userinfo.Uid, utlId)
 	if err != nil {
 		flash.Warning("参与活动%d失败：%v", aid, err)
 		flash.Store(&c.Controller)
 		return
-
 	}
 
 }

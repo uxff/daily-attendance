@@ -4,6 +4,35 @@
 {{template "alert.tpl" .}}
 <div class="container">
     <div class="row">
-        参与活动
+        <div class="col-md-4 col-md-offset-2">
+            活动名称
+        </div>
+        <div class="col-md-4 col-md-offset-6">
+            {{.act.Name}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+            活动参与价格
+        </div>
+        <div class="col-md-4 col-md-offset-6">
+            {{.act.JoinPrice}} 积分
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+            连续多长时间可以分红
+        </div>
+        <div class="col-md-4 col-md-offset-6">
+            {{.act.BonusNeedStep}} 天
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-md-4 col-md-offset-2">
+            <form action="" method="post">
+                {{.xsrfdata}}
+                <button type="submit" class="btn btn-primary">确认参与</button>
+            </form>
+        </div>
     </div>
 </div>

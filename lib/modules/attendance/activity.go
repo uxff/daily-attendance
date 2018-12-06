@@ -84,10 +84,10 @@ func StopActivity(Aid int) {
 
 func UserJoinActivity(Aid, Uid, UtlId int) error {
 
-	if UtlId <= 0 {
-		//logs.Error("")
-		return errors.New("UtlId cannot be 0")
-	}
+	//if UtlId <= 0 {
+	//	//logs.Error("")
+	//	return errors.New("UtlId cannot be 0")
+	//}
 
 	if Aid <= 0 {
 		return errors.New("Aid cannot be 0")

@@ -108,20 +108,26 @@ const (
 	TradeTypeRevertCharge = 23
 )
 
+const (
+	PayStatusNone = 1
+	PayStatusSuccess = 2
+	PayStatusFail = 3
+)
+
 // user - 1:N - utl
 type UserTradeLog struct {
 	UtlId int `orm:"pk;auto"`
 	Uid int `orm:"type(int)"`
 	Amount int `orm:"type(int)"`
-	TradeType byte `orm:"type(tinyint)"`
-	PlusMinus byte `orm:"type(tinyint)"` // -1 or +1
-	SourceType byte `orm:"type(tinyint);default(0)"`
+	TradeType int8 `orm:"type(tinyint)"`
+	PlusMinus int8 `orm:"type(tinyint)"` // -1 or +1
+	SourceType int8 `orm:"type(tinyint);default(0)"`
 	Balance int `orm:"type(int);default(0)"`
-	PayStatus byte `orm:"type(tinyint);default(0)"`
-	RefundStatus byte `orm:"type(tinyint);default(0)"`
+	PayStatus int8 `orm:"type(tinyint);default(0)"`
+	RefundStatus int8 `orm:"type(tinyint);default(0)"`
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status byte `orm:"type(tinyint);default(1)"`
+	Status int8 `orm:"type(tinyint);default(1)"`
 	RelatedUtlId int `orm:"type(int);default(0)"`
 	WastageDetail string `orm:"type(text)"`
 	ConsumeDetail string `orm:"type(text)"`
@@ -143,7 +149,7 @@ type WastageShare struct {
 
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status byte `orm:"type(tinyint);default(1)"`
+	Status int8 `orm:"type(tinyint);default(1)"`
 }
 
 // Uid - 1:1 - UbId
@@ -153,7 +159,7 @@ type UserBalance struct {
 	Balance int64 `orm:"type(int);default(0)"` // cent
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status byte `orm:"type(tinyint);default(1)"`
+	Status int8 `orm:"type(tinyint);default(1)"`
 }
 
 type RankCheckIn struct {
@@ -165,7 +171,7 @@ type RankCheckIn struct {
 	CheckInTimes int `orm:"-"`
 	Created time.Time `orm:"-"`
 	Updated time.Time `orm:"-"`
-	Status byte `orm:"-"`
+	Status int8 `orm:"-"`
 }
 
 type RankAwardAmount struct {
@@ -179,7 +185,7 @@ type RankAwardAmount struct {
 	CheckInTimes int `orm:"-"`
 	Created time.Time `orm:"-"`
 	Updated time.Time `orm:"-"`
-	Status byte `orm:"-"`
+	Status int8 `orm:"-"`
 }
 
 func (t *AttendanceActivity) TableEngine() string {
