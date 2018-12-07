@@ -121,7 +121,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	return nil
 }
 
-func ListUserActivityLog(Uid int, Aid int, status []int8) []*models.JoinActivityLog {
+func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinActivityLog {
 	list := []*models.JoinActivityLog{}
 
 	ormObj := orm.NewOrm()
