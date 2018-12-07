@@ -57,13 +57,19 @@ func (c *AttendanceController) Join() {
 	}
 
 	// 查看已经参与的活动
-	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, models.JalStatusAchieving)
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []int8{models.JalStatusAchieving, models.JalStatusNormal})
 
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
 	c.Data["act"] = act
+	c.Data["jals"] = jals
+
+	if jals != nil {
+		flash.Warning("您已经于%v参与了活动%s(%d)", jals[0].Created, act.Name, jals[0].Aid)
+		flash.Store(&c.Controller)
+		return
+	}
 
 	if !c.Ctx.Input.IsPost() {
-		c.Data["jals"] = jals
 		return
 	}
 
