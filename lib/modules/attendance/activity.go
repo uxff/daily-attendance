@@ -130,9 +130,7 @@ func ListUserActivityLog(Uid int, Aid int, status []int8) []*models.JoinActivity
 		filter.Filter("aid", Aid)
 	}
 	if len(status) > 0 {
-		for _, st := range status {
-			filter.Filter("status", st)
-		}
+		filter.Filter("status__in", status...)
 	}
 	filter.All(&list)
 
