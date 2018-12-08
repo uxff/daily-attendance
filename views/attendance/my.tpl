@@ -35,7 +35,7 @@
                 {{range $ji, $jal := .jals}}
                 <tr>
                     <td>{{timefmtm .Created}}</td>
-                    <td>{{.Aid.Name}}({{.Aid}})</td>
+                    <td>{{.Aid.Name}}</td>
                     <td>{{.JoinPrice}}</td>
                     <td>{{.Step}}/{{.BonusNeedStep}}</td>
                     <td>{{jalstatus .Status}}</td>

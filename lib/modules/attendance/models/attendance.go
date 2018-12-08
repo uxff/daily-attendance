@@ -2,32 +2,33 @@ package models
 
 import (
 	"time"
-	"github.com/astaxie/beego/orm"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 )
 
 const (
-	StatusNormal = 1
+	StatusNormal  = 1
 	StatusDeleted = 99
 )
 
 const (
-	CheckInPeriodSecondly = 2	// deprecated
-	CheckInPeriodMinutely = 3	// deprecated
-	CheckInPeriodHourly = 4
-	CheckInPeriodDaily = 5
-	CheckInPeriodWeekly = 6 	// unimplement
-	CheckInPeriodMonthly = 7
-	CheckInPeriodYearly = 8 // deprecated
+	CheckInPeriodSecondly = 2 // deprecated
+	CheckInPeriodMinutely = 3 // deprecated
+	CheckInPeriodHourly   = 4
+	CheckInPeriodDaily    = 5
+	CheckInPeriodWeekly   = 6 // unimplement
+	CheckInPeriodMonthly  = 7
+	CheckInPeriodYearly   = 8 // deprecated
 )
 
 // its a checkin project
 type AttendanceActivity struct {
-	Aid int	`orm:"pk;auto"`
+	Aid  int    `orm:"pk;auto"`
 	Name string `orm:"size(32);unique"`
 
 	ValidTimeStart string `orm:"type(datetime)"`
-	ValidTimeEnd string `orm:"type(datetime)"`
+	ValidTimeEnd   string `orm:"type(datetime)"`
 
 	// unique(uid+checkInKey+checkInPeriod)
 	// rule for daily work:[{"WORKUP":{"timespan":["00:00","10:00"]}},{"WORKOFF":{"timespan":["18:00","23:59"]}}]
@@ -39,15 +40,15 @@ type AttendanceActivity struct {
 	BonusNeedStep   int    `orm:"type(int);default(0)"` // step count by CheckInPeriod
 	AwardPerCheckIn int    `orm:"type(int);default(0)"` // get bonus per check in
 	//AwardMap string // {"1":10,"2":25,"5":100} 1day award 10, 2day award 25 // needed?
-	CreatorUid int `orm:"type(int);default(0)"`
-	Created time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status int8 `orm:"type(tinyint);default(1)"`
-	JoinPrice int	`orm:"type(int);default(0)"`
+	CreatorUid int       `orm:"type(int);default(0)"`
+	Created    time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated    time.Time `orm:"auto_now;type(datetime)"`
+	Status     int8      `orm:"type(tinyint);default(1)"`
+	JoinPrice  int       `orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
-	JoinedUserCount  int `orm:"type(int);default(0)"`
-	JoinedGoldsCount int `orm:"type(int);default(0)"`
+	JoinedUserCount     int     `orm:"type(int);default(0)"`
+	JoinedGoldsCount    int     `orm:"type(int);default(0)"`
 
 	// use Wasting Rule?
 	//BonusRule string // use Bonus Rule?
@@ -56,156 +57,158 @@ type AttendanceActivity struct {
 
 }
 
-
 const (
-	JalStatusNormal = 1
+	JalStatusNormal    = 1
 	JalStatusAchieving = 2 // more than 5 days
-	JalStatusMissed = 3 // disachived, missed, same as wasted
-	JalStatusStopped = 4 // stopped by user manual
-	JalStatusShared = 5 //
+	JalStatusMissed    = 3 // disachived, missed, same as wasted
+	JalStatusStopped   = 4 // stopped by user manual
+	JalStatusShared    = 5 //
 )
-var JalStatusMap = map[int8]string {
-	JalStatusNormal:"坚持中",
-	JalStatusAchieving:"达标分红中",
-	JalStatusMissed:"中断",
-	JalStatusStopped:"停止",
-	JalStatusShared:"被瓜分",
+
+var JalStatusMap = map[int8]string{
+	JalStatusNormal:    "坚持中",
+	JalStatusAchieving: "达标分红中",
+	JalStatusMissed:    "中断",
+	JalStatusStopped:   "停止",
+	JalStatusShared:    "被瓜分",
 }
+
 // unique (user+aid+(status=1))
 // user - 1:N - jal
 type JoinActivityLog struct {
 	JalId int                 `orm:"pk;auto"`
 	Aid   *AttendanceActivity `orm:"rel(one);default(0);null"`
 	//Aidd           int       `orm:"type(int)"`
-	Uid           int       `orm:"type(int)"`
-	Created       time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated       time.Time `orm:"auto_now;type(datetime)"`
-	StartDate     string    `orm:"type(datetime)"` //mysql.Date?
-	BonusNeedStep int       `orm:"type(int);default(0)"`
-	Step          int       `orm:"type(int);default(0)"`
-	LastStepDate  string    `orm:"time(datetime)"` // needed?
-	IsFinish      int8      `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched int8 	`orm:"type(tinyint);default(0)"`
-	JoinUtlId 	  int 			`orm:"type(int);default(0)"`
-	JoinPrice 	  int 			`orm:"type(int);default(0)"`
-	Status 		  int8 			`orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	Uid              int       `orm:"type(int)"`
+	Created          time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated          time.Time `orm:"auto_now;type(datetime)"`
+	StartDate        string    `orm:"type(datetime)"` //mysql.Date?
+	BonusNeedStep    int       `orm:"type(int);default(0)"`
+	Step             int       `orm:"type(int);default(0)"`
+	LastStepDate     string    `orm:"time(datetime)"`           // needed?
+	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
+	RewardDispatched int8      `orm:"type(tinyint);default(0)"`
+	JoinUtlId        int       `orm:"type(int);default(0)"`
+	JoinPrice        int       `orm:"type(int);default(0)"`
+	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	BonusTotal       int       `orm:"type(int);default(1)"`
 	//IsMissed int // is wasted
 
 }
 
 const (
-	CheckInKeyTypeWorkUp = "WORKUPD"
-	CheckInKeyTypeWorkOff = "WORKOFFD"
-	CheckInKeyTypeDailyHealth = "HEALTHD"
+	CheckInKeyTypeWorkUp        = "WORKUPD"
+	CheckInKeyTypeWorkOff       = "WORKOFFD"
+	CheckInKeyTypeDailyHealth   = "HEALTHD"
 	CheckInKeyTypeMonthlyReport = "REPORTM"
 )
+
 // user - 1:N - CilId
 // CheckInKey 1:1 CilId
 type CheckInLog struct {
 	CilId int `orm:"pk;auto"`
 	//JalId int `orm:"-"` // needed?
-	Uid int `orm:"type(int)"`
-	Aid int `orm:"type(int);default(0)"`
-	CheckInKeyType string `orm:"size(32)"`
-	CheckInKey string `orm:"size(32)"`	// unique of a user
-	Created time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status int8 `orm:"type(tinyint);default(1)"`
+	Uid            int       `orm:"type(int)"`
+	Aid            int       `orm:"type(int);default(0)"`
+	CheckInKeyType string    `orm:"size(32)"`
+	CheckInKey     string    `orm:"size(32)"` // unique of a user
+	Created        time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated        time.Time `orm:"auto_now;type(datetime)"`
+	Status         int8      `orm:"type(tinyint);default(1)"`
 }
 
 const (
-	TradeTypeCharge = 1
-	TradeTypeCheckInAward = 2
+	TradeTypeCharge        = 1
+	TradeTypeCheckInAward  = 2
 	TradeTypeRevertConsume = 3
-	TradeTypeCheckInBonus = 4
-	TradeTypeConsume = 21
-	TradeTypeWastage = 22
-	TradeTypeRevertCharge = 23
+	TradeTypeCheckInBonus  = 4
+	TradeTypeConsume       = 21
+	TradeTypeWastage       = 22
+	TradeTypeRevertCharge  = 23
 )
 
 const (
-	PayStatusNone = 1
+	PayStatusNone    = 1
 	PayStatusSuccess = 2
-	PayStatusFail = 3
+	PayStatusFail    = 3
 )
 
 const (
-	UserTradePlus = 1
+	UserTradePlus  = 1
 	UserTradeMinus = -1
 )
 
 // user - 1:N - utl
 type UserTradeLog struct {
-	UtlId int `orm:"pk;auto"`
-	Uid int `orm:"type(int)"`
-	Amount int `orm:"type(int)"`
-	TradeType int8 `orm:"type(tinyint)"`
-	PlusMinus int8 `orm:"type(tinyint)"` // -1 or +1
-	SourceType int8 `orm:"type(tinyint);default(0)"`
-	Balance int `orm:"type(int);default(0)"`
-	PayStatus int8 `orm:"type(tinyint);default(0)"`
-	RefundStatus int8 `orm:"type(tinyint);default(0)"`
-	Created time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status int8 `orm:"type(tinyint);default(1)"`
-	RelatedUtlId int `orm:"type(int);default(0)"`
-	WastageDetail string `orm:"type(text)"`
-	ConsumeDetail string `orm:"type(text)"`
-	Remark string `orm:"type(text)"`
-	PayId string `orm:"type(int);default(0)"`
-	PayInfo string `orm:"type(text)"`
+	UtlId         int       `orm:"pk;auto"`
+	Uid           int       `orm:"type(int)"`
+	Amount        int       `orm:"type(int)"`
+	TradeType     int8      `orm:"type(tinyint)"`
+	PlusMinus     int8      `orm:"type(tinyint)"` // -1 or +1
+	SourceType    int8      `orm:"type(tinyint);default(0)"`
+	Balance       int       `orm:"type(int);default(0)"`
+	PayStatus     int8      `orm:"type(tinyint);default(0)"`
+	RefundStatus  int8      `orm:"type(tinyint);default(0)"`
+	Created       time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated       time.Time `orm:"auto_now;type(datetime)"`
+	Status        int8      `orm:"type(tinyint);default(1)"`
+	RelatedUtlId  int       `orm:"type(int);default(0)"`
+	WastageDetail string    `orm:"type(text)"`
+	ConsumeDetail string    `orm:"type(text)"`
+	Remark        string    `orm:"type(text)"`
+	PayId         string    `orm:"type(int);default(0)"`
+	PayInfo       string    `orm:"type(text)"`
 }
-
 
 // user - N:N - wsid
 // UtlId - 1:N - wsid
 type WastageShare struct {
 	WsId int `orm:"pk;auto"`
 	//UtlId int `orm:""`
-	JalId int `orm:"type(int)"`
+	JalId   int `orm:"type(int)"`
 	FromUid int `orm:"type(int)"`
-	ToUid int `orm:"type(int)"`
-	Amount int `orm:"type(int)"`
+	ToUid   int `orm:"type(int)"`
+	Amount  int `orm:"type(int)"`
 
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status int8 `orm:"type(tinyint);default(1)"`
+	Status  int8      `orm:"type(tinyint);default(1)"`
 }
 
 // Uid - 1:1 - UbId
 type UserBalance struct {
-	UbId int `orm:"pk;auto"`
-	Uid int `orm:"type(int)"`
-	Balance int64 `orm:"type(int);default(0)"` // cent
+	UbId    int       `orm:"pk;auto"`
+	Uid     int       `orm:"type(int)"`
+	Balance int64     `orm:"type(int);default(0)"` // cent
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status int8 `orm:"type(tinyint);default(1)"`
+	Status  int8      `orm:"type(tinyint);default(1)"`
 }
 
 type RankCheckIn struct {
 	RciId int `orm:"-"`
-	Rank int `orm:"-"`
-	Uid int `orm:"-"`
-	Aid int `orm:"-"`
+	Rank  int `orm:"-"`
+	Uid   int `orm:"-"`
+	Aid   int `orm:"-"`
 	// 连续check次数
-	CheckInTimes int `orm:"-"`
-	Created time.Time `orm:"-"`
-	Updated time.Time `orm:"-"`
-	Status int8 `orm:"-"`
+	CheckInTimes int       `orm:"-"`
+	Created      time.Time `orm:"-"`
+	Updated      time.Time `orm:"-"`
+	Status       int8      `orm:"-"`
 }
 
 type RankAwardAmount struct {
-	RaaId int `orm:"-"`
-	Rank int `orm:"-"`
-	Uid int `orm:"-"`
-	Aid int `orm:"-"`
+	RaaId       int `orm:"-"`
+	Rank        int `orm:"-"`
+	Uid         int `orm:"-"`
+	Aid         int `orm:"-"`
 	AwardAmount int `orm:"-"`
-	AwardTimes int `orm:"-"`
+	AwardTimes  int `orm:"-"`
 	// 连续check次数
-	CheckInTimes int `orm:"-"`
-	Created time.Time `orm:"-"`
-	Updated time.Time `orm:"-"`
-	Status int8 `orm:"-"`
+	CheckInTimes int       `orm:"-"`
+	Created      time.Time `orm:"-"`
+	Updated      time.Time `orm:"-"`
+	Status       int8      `orm:"-"`
 }
 
 func (t *AttendanceActivity) TableEngine() string {
@@ -227,8 +230,7 @@ func (t *CheckInLog) TableEngine() string {
 	return "INNODB"
 }
 
-
-func init () {
+func init() {
 	orm.RegisterModelWithPrefix(
 		beego.AppConfig.String("dbprefix"),
 		new(AttendanceActivity),
