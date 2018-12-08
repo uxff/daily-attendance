@@ -31,6 +31,14 @@ func init() {
 		return in.Format("2006/01/02 15:04")
 	})
 
+	beego.AddFuncMap("timefmt", func(in time.Time) string {
+		return in.Format("2006-01-02 15:04:05")
+	})
+
+	beego.AddFuncMap("timefmtm", func(in time.Time) string {
+		return in.Format("2006-01-02 15:04")
+	})
+
 	beego.AddFuncMap("qescape", func(in string) string {
 		return url.QueryEscape(in)
 	})

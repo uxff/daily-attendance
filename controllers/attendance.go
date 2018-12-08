@@ -11,6 +11,12 @@ import (
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
+func init() {
+	beego.AddFuncMap("jalstatus", func(jalStatus int8) string {
+		return models.JalStatusMap[jalStatus]
+	})
+}
+
 type AttendanceController struct {
 	BaseController
 }
@@ -22,14 +28,25 @@ func (c *AttendanceController) NestPrepare() {
 
 func (c *AttendanceController) Index() {
 
-	activities := attendance.ListActivities()
+	activities := attendance.ListActivities(map[string]interface{}{"status":models.StatusNormal })
 	c.Data["activities"] = activities
 
 	c.TplName = "attendance/index.tpl"
 }
 
-func (c *AttendanceController) Project() {
+func (c *AttendanceController) My() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.URLFor("UserController.Index"))
+		return
+	}
 
+	// 查看已经参与的活动
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, 0, nil)
+
+	c.Data["jals"] = jals
+	c.Data["total"] = len(jals)
+	c.Data["jalStatusMap"] = models.JalStatusMap
+	c.TplName = "attendance/my.tpl"
 }
 
 func (c *AttendanceController) Join() {
@@ -63,18 +80,18 @@ func (c *AttendanceController) Join() {
 	c.Data["act"] = act
 	c.Data["jals"] = jals
 
-	if jals != nil {
-		flash.Warning("您已经于%v参与了活动%s(%d)", jals[0].Created, act.Name, jals[0].Aid)
-		flash.Store(&c.Controller)
-		return
-	}
-
 	if !c.Ctx.Input.IsPost() {
 		return
 	}
 
 	if !c.CheckXSRFCookie() {
 		flash.Warning("页面过期，请刷新后重试")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	if len(jals)>0 {
+		flash.Warning("您已经参与过活动(%d)(%d次)", act.Aid, len(jals))
 		flash.Store(&c.Controller)
 		return
 	}

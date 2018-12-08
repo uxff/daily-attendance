@@ -13,9 +13,15 @@ import (
 
 //var ormObj orm.Ormer
 
-func ListActivities() []*models.AttendanceActivity {
+func ListActivities(conditions map[string]interface{}) []*models.AttendanceActivity {
 	var activities []*models.AttendanceActivity
-	orm.NewOrm().QueryTable(&models.AttendanceActivity{Status:models.StatusNormal}).All(&activities)
+	filter := orm.NewOrm().QueryTable(&models.AttendanceActivity{Status:models.StatusNormal})
+	if conditions != nil {
+		for condName, cond := range conditions {
+			filter = filter.Filter(condName, cond)
+		}
+	}
+	filter.All(&activities)
 	return activities
 }
 
@@ -90,7 +96,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	//}
 
 	if Aid <= 0 {
-		return errors.New("Aid cannot be 0")
+		return errors.New("Aidd cannot be 0")
 	}
 
 	var ormObj = orm.NewOrm()
@@ -103,12 +109,13 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 
 	// add jal
 	jal := models.JoinActivityLog{
-		Aid:              Aid,
+		Aid:             &act,
 		Uid:              Uid,
 		IsFinish:         0,
 		RewardDispatched: 0,
 		BonusNeedStep:    act.BonusNeedStep,
 		JoinUtlId:        UtlId,
+		Status:           models.StatusNormal,
 	}
 	_, err = ormObj.Insert(&jal)
 	if err != nil {
@@ -122,15 +129,18 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 }
 
 func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinActivityLog {
+
 	list := []*models.JoinActivityLog{}
 
 	ormObj := orm.NewOrm()
+
 	filter := ormObj.QueryTable(models.JoinActivityLog{}).Filter("uid", Uid)
+	filter = filter.RelatedSel("aid")
 	if Aid > 0 {
-		filter.Filter("aid", Aid)
+		filter = filter.Filter("aid", Aid)
 	}
 	if len(status) > 0 {
-		filter.Filter("status__in", status...)
+		filter = filter.Filter("status__in", status...)
 	}
 	filter.All(&list)
 

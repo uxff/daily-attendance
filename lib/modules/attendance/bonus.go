@@ -14,9 +14,6 @@ func ListUserBonusLog(Uid int) []*models.WastageShare {
 	return list
 }
 
-func GetUserBonus(Uid int) {
-
-}
 
 func ListUserWastageLog(Uid int) []*models.WastageShare {
 	list := []*models.WastageShare{}
@@ -28,9 +25,9 @@ func ListUserWastageLog(Uid int) []*models.WastageShare {
 }
 
 // share all missed
-func ShareMissedAttendance(jal *models.JoinActivityLog) {
+func ShareMissedAttendance(misshedJal *models.JoinActivityLog) {
 	// list all activity
-	activities := ListActivities()
+	activities := ListActivities(map[string]interface{}{"status":models.StatusNormal })
 	for _, act := range activities {
 		missedJals := ListMissedJal(act.Aid)
 		successJals := ListAchievedJal(act.Aid)
@@ -51,7 +48,7 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals[]*models.Join
 	//
 	// for _, sjal := range successJals {
 	//    goods := goldsWillShare * (sjal.JoinUtlId.Price*sjal.Step/allSuccessFeederGoods)
-	//    DispatchBonus(sjal.Aid, sjal.Uid, goods)
+	//    DispatchBonus(sjal.Aidd, sjal.Uid, goods)
 	// }
 	return nil
 }

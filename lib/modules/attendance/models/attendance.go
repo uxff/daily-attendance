@@ -64,11 +64,19 @@ const (
 	JalStatusStopped = 4 // stopped by user manual
 	JalStatusShared = 5 //
 )
+var JalStatusMap = map[int8]string {
+	JalStatusNormal:"坚持中",
+	JalStatusAchieving:"达标分红中",
+	JalStatusMissed:"中断",
+	JalStatusStopped:"停止",
+	JalStatusShared:"被瓜分",
+}
 // unique (user+aid+(status=1))
 // user - 1:N - jal
 type JoinActivityLog struct {
-	JalId         int       `orm:"pk;auto"`
-	Aid           int       `orm:"type(int)"`
+	JalId int                 `orm:"pk;auto"`
+	Aid   *AttendanceActivity `orm:"rel(one);default(0);null"`
+	//Aidd           int       `orm:"type(int)"`
 	Uid           int       `orm:"type(int)"`
 	Created       time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated       time.Time `orm:"auto_now;type(datetime)"`
@@ -77,11 +85,12 @@ type JoinActivityLog struct {
 	Step          int       `orm:"type(int);default(0)"`
 	LastStepDate  string    `orm:"time(datetime)"` // needed?
 	IsFinish      int8      `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched int8 `orm:"type(tinyint);default(0)"`
-	JoinUtlId int `orm:"type(int);default(0)"`
-	JoinPrice int `orm:"type(int);default(0)"`
-	Status int8 `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	RewardDispatched int8 	`orm:"type(tinyint);default(0)"`
+	JoinUtlId 	  int 			`orm:"type(int);default(0)"`
+	JoinPrice 	  int 			`orm:"type(int);default(0)"`
+	Status 		  int8 			`orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
 	//IsMissed int // is wasted
+
 }
 
 const (

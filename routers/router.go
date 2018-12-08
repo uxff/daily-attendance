@@ -15,7 +15,7 @@ func init() {
 	beego.Router("/attendance", &controllers.AttendanceController{}, "get:Index")
 	beego.Router("/attendance/add", &controllers.AttendanceController{}, "get,post:Add")
 	beego.Router("/attendance/join", &controllers.AttendanceController{}, "get,post:Join")
-	beego.Router("/attendance/project", &controllers.AttendanceController{}, "get,post:Project")
+	beego.Router("/attendance/my", &controllers.AttendanceController{}, "get,post:My")
 
  	beego.Router("/user/balance", &controllers.UsersController{}, "get:Balance")
 	beego.Router("/user/invite", &controllers.UsersController{}, "get:Invite")

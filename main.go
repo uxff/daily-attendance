@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	_ "github.com/uxff/daily-attendance/conf/inits"
 	_ "github.com/uxff/daily-attendance/routers"
-	"github.com/astaxie/beego/logs"
 	"github.com/uxff/daily-attendance/models"
 )
 
