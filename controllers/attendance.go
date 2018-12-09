@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"html/template"
 	"time"
-	"encoding/json"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -28,7 +28,7 @@ func (c *AttendanceController) NestPrepare() {
 
 func (c *AttendanceController) Index() {
 
-	activities := attendance.ListActivities(map[string]interface{}{"status":models.StatusNormal })
+	activities := attendance.ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	c.Data["activities"] = activities
 
 	c.TplName = "attendance/index.tpl"
@@ -90,15 +90,15 @@ func (c *AttendanceController) Join() {
 		return
 	}
 
-	if len(jals)>0 {
-		flash.Warning("您已经参与过活动(%d)(%d次)", act.Aid, len(jals))
+	if len(jals) > 0 {
+		flash.Warning("您已经参与过活动%s(%d次)", act.Name, len(jals))
 		flash.Store(&c.Controller)
 		return
 	}
 
 	utlId := 0
 	var err error
-	if act.JoinPrice>0 {
+	if act.JoinPrice > 0 {
 		actProduct := attendance.ActivityToProduct(act)
 		utlId, err = attendance.Consume(c.Userinfo.Uid, actProduct, 1)
 		if err != nil {
@@ -154,11 +154,10 @@ func (c *AttendanceController) Add() {
 	startTime, err := time.Parse("2006-01-02 15:04", startTimeStr)
 	endTime, err := time.Parse("2006-01-02 15:04", endTimeStr)
 
-
 	checkInRuleMap := new(attendance.CheckInRuleMap)
 	err = json.Unmarshal([]byte(checkInRuleStr), checkInRuleMap)
 	if err != nil {
-		flash.Warning("规则格式不正确 "+ err.Error()+ " origin:"+checkInRuleStr)
+		flash.Warning("规则格式不正确 " + err.Error() + " origin:" + checkInRuleStr)
 		flash.Store(&c.Controller)
 		return
 	}
@@ -166,11 +165,10 @@ func (c *AttendanceController) Add() {
 
 	err = attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, float32(wastagePercent))
 	if err != nil {
-		flash.Warning("创建活动失败 "+ err.Error())
+		flash.Warning("创建活动失败 " + err.Error())
 		flash.Store(&c.Controller)
 		return
 	}
 	flash.Warning("创建活动成功 ")
 	flash.Store(&c.Controller)
 }
-
