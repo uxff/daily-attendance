@@ -91,7 +91,7 @@ type JoinActivityLog struct {
 	JoinUtlId        int       `orm:"type(int);default(0)"`
 	JoinPrice        int       `orm:"type(int);default(0)"`
 	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
-	BonusTotal       int       `orm:"type(int);default(1)"`
+	BonusTotal       int       `orm:"type(int);default(0)"`
 	//IsMissed int // is wasted
 
 }
@@ -177,12 +177,14 @@ type WastageShare struct {
 
 // Uid - 1:1 - UbId
 type UserBalance struct {
-	UbId    int       `orm:"pk;auto"`
-	Uid     int       `orm:"type(int)"`
-	Balance int64     `orm:"type(int);default(0)"` // cent
-	Created time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated time.Time `orm:"auto_now;type(datetime)"`
-	Status  int8      `orm:"type(tinyint);default(1)"`
+	UbId         int       `orm:"pk;auto"`
+	Uid          int       `orm:"type(int)"`
+	Balance      int64     `orm:"type(bigint);default(0)"` // cent
+	TotalIncome  int64     `orm:"type(bigint);default(0)"`
+	TotalExpense int64     `orm:"type(bigint);default(0)"`
+	Created      time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated      time.Time `orm:"auto_now;type(datetime)"`
+	Status       int8      `orm:"type(tinyint);default(1)"`
 }
 
 type RankCheckIn struct {

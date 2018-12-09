@@ -12,8 +12,8 @@
             <li><a href="/user/invite">推广码</a></li>
         </ul>
         <h4>我的参与的打卡计划</h4>
-        <div class="col-lg-3"></div>
-        <div class="col-lg-6">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8">
             <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
@@ -23,10 +23,10 @@
                     <td>完成度</td>
                     <td>状态</td>
                     <td>累计获得奖励</td>
+                    <td>操作</td>
                 </tr>
                 </thead>
                 <tbody>
-
             {{if eq 0 .total }}
                 <tr>
                     <td colspan="12">您还没有参与任何活动</td>
@@ -40,18 +40,18 @@
                     <td>{{.Step}}/{{.BonusNeedStep}}</td>
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
+                    <td><a href="javascript:;">打卡</a></td>
                 </tr>
                 {{end}}
             {{end}}
                 </tbody>
             </table>
         </div>
-        <div class="col-lg-3"></div>
+        <div class="col-lg-2"></div>
     </div>
     <div class="row">
-        <div class="col-lg-3 col-lg-offset-2">
+        <div class="col-lg-2 col-lg-offset-2">
             共{{.total}}条
         </div>
-
     </div>
 </div>

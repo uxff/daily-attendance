@@ -6,8 +6,8 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/uxff/daily-attendance/lib"
-	"github.com/uxff/daily-attendance/models"
 	"github.com/uxff/daily-attendance/lib/modules/attendance"
+	"github.com/uxff/daily-attendance/models"
 )
 
 type UsersController struct {
@@ -69,7 +69,7 @@ func (c *UsersController) Login() {
 
 	user, err := lib.Authenticate(email, password)
 	if err != nil || user.Uid < 1 {
-		flash.Warning("登录失败，不正确的用户或密码 "+err.Error())
+		flash.Warning("登录失败，不正确的用户或密码 " + err.Error())
 		flash.Store(&c.Controller)
 		return
 	}
@@ -144,9 +144,11 @@ func (c *UsersController) Balance() {
 	}
 
 	balance := attendance.GetUserBalance(c.Userinfo.Uid)
+	utls := attendance.ListUserTradeLog(c.Userinfo.Uid)
 
 	c.Data["balance"] = balance
-	c.Data["tradeLog"] = attendance.ListUserTradeLog(c.Userinfo.Uid)
+	c.Data["utls"] = utls
+	c.Data["total"] = len(utls)
 
 	c.TplName = "users/balance.tpl"
 }
@@ -182,4 +184,3 @@ func (c *UsersController) Invite() {
 	}
 	c.TplName = "users/invite.tpl"
 }
-
