@@ -1,19 +1,19 @@
 package attendance
 
 import (
-	"strings"
-	"fmt"
-	"strconv"
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego/logs"
-	"time"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
 	// CheckInKeyType extendible
-	CheckInKeyWorkUp = "WORKUP"
-	CheckInKeyWorkOff = "WORKOFF"
+	CheckInKeyWorkUp      = "WORKUP"
+	CheckInKeyWorkOff     = "WORKOFF"
 	CheckInKeyHealthDaily = "HEALTHD"
 )
 
@@ -25,15 +25,17 @@ type CheckInRuleMap map[string]CheckInRule
 
 type CheckInRule struct {
 	//CheckInKey string `json:"checkinkey"`
-	TimeSpan string `json:"timespan,omitempty"`
+	TimeSpan    string `json:"timespan,omitempty"`
 	TimeSpanMap struct {
 		Start string
-		End string
+		End   string
 	}
-	DaySpan string `json:"dayspan,omitempty"`
+	DaySpan    string `json:"dayspan,omitempty"`
 	DaySpanMap struct {
-		Start string
-		End string
+		Start  string
+		End    string
+		StartN int
+		EndN   int
 	}
 }
 
@@ -82,7 +84,7 @@ func (c *CheckInRule) IsMinuteSpanValid() bool {
 	return c.IsHourSpanValid()
 }
 
-func (c *CheckInRule) IsHourSpanValid()  bool {
+func (c *CheckInRule) IsHourSpanValid() bool {
 	if c.TimeSpan != "" {
 		timeSpanStartAndEnd := strings.Split(c.TimeSpan, "-")
 		if len(timeSpanStartAndEnd) < 2 {
@@ -108,12 +110,12 @@ func (c *CheckInRule) IsHourSpanValid()  bool {
 			return false
 		}
 
-		c.TimeSpanMap = struct{
+		c.TimeSpanMap = struct {
 			Start string
-			End string
+			End   string
 		}{
-			Start:fmt.Sprintf("%02d:%02d", startHour, startMin),
-			End:fmt.Sprintf("%02d:%02d", endHour, endMin),
+			Start: fmt.Sprintf("%02d:%02d", startHour, startMin),
+			End:   fmt.Sprintf("%02d:%02d", endHour, endMin),
 		}
 
 		return true
@@ -121,7 +123,6 @@ func (c *CheckInRule) IsHourSpanValid()  bool {
 
 	return true // no limit
 }
-
 
 func (c *CheckInRule) IsWeekdaySpanValid() bool {
 	// use timespan format
@@ -153,12 +154,16 @@ func (c *CheckInRule) IsDaySpanValid() bool {
 			return false
 		}
 
-		c.DaySpanMap = struct{
-			Start string
-			End string
+		c.DaySpanMap = struct {
+			Start  string
+			End    string
+			StartN int
+			EndN   int
 		}{
-			Start:fmt.Sprintf("%02d", dayStart),
-			End:fmt.Sprintf("%02d", dayEnd),
+			Start:  fmt.Sprintf("%02d", dayStart),
+			End:    fmt.Sprintf("%02d", dayEnd),
+			StartN: dayStart,
+			EndN:   dayEnd,
 		}
 
 		return true
@@ -216,3 +221,93 @@ func Json2CheckInRule(str string) CheckInRuleMap {
 	return cir
 }
 
+// 获取某一时间的key和对应的起始时间
+func (c *CheckInRule) GetSecondlyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("20060102150405")),
+		From:    fmt.Sprintf("%s", t.Format("2006-01-02 15:04:05")),
+		To:      fmt.Sprintf("%s", t.Format("2006-01-02 15:04:05")),
+	}
+}
+
+func (c *CheckInRule) GetMinutelyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if t.Second() < c.DaySpanMap.StartN {
+		t = t.Add(time.Minute)
+	}
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("200601021504")),
+		From:    fmt.Sprintf("%s:%s", t.Format("2006-01-02 15:04"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s:%s", t.Format("2006-01-02 15:04"), c.DaySpanMap.End),
+	}
+}
+
+func (c *CheckInRule) GetHourlyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if t.Format("04:05") < c.TimeSpanMap.Start {
+		t = t.Add(time.Hour)
+	}
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("2006010215")),
+		From:    fmt.Sprintf("%s:%s", t.Format("2006-01-02 15"), c.TimeSpanMap.Start),
+		To:      fmt.Sprintf("%s:%s", t.Format("2006-01-02 15"), c.TimeSpanMap.End),
+	}
+}
+
+func (c *CheckInRule) GetDailyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if t.Format("15:04") < c.TimeSpanMap.Start {
+		t = t.Add(time.Hour * 24)
+	}
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("20060102")),
+		From:    fmt.Sprintf("%s %s:00", t.Format("2006-01-02"), c.TimeSpanMap.Start),
+		To:      fmt.Sprintf("%s %s:59", t.Format("2006-01-02"), c.TimeSpanMap.End),
+	}
+}
+
+// week day from 0
+func (c *CheckInRule) GetWeeklyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if int(t.Weekday()) < c.DaySpanMap.StartN {
+		t = t.Add(time.Hour * 24 * 7)
+	}
+	//tStart := t.YearDay() - int(t.Weekday())
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%sw%02d", jalId, checkInKeyMark, t.Format("2006"), t.YearDay()-int(t.Weekday())),
+		From:    fmt.Sprintf("%s 00:00:00", t.Format("2006-01-02"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s 23:59:59", t.Format("2006-01-02"), c.DaySpanMap.End),
+	}
+}
+
+// month from 1
+func (c *CheckInRule) GetMonthlyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if t.Day() < c.DaySpanMap.StartN {
+		t = t.Add(time.Hour * 24)
+	}
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("200601")),
+		From:    fmt.Sprintf("%s-%02d 00:00:00", t.Format("2006-01"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s-%02d 23:59:59", t.Format("2006-01"), c.DaySpanMap.End),
+	}
+}
+
+// not supported
+func (c *CheckInRule) GetYearlyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+	if int(t.Month()) < c.DaySpanMap.StartN {
+		t = t.Add(time.Hour * 24 * 30)
+	}
+	return CheckInScheduleElem{
+		KeyMark: checkInKeyMark,
+		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("2006")),
+		From:    fmt.Sprintf("%s-%02d-01 00:00:00", t.Format("2006"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s-%02d-30 23:59:59", t.Format("2006"), c.DaySpanMap.End),
+	}
+}
+
+func (c *CheckInRule) GetSecondlyCheckInScheduleElem(jalId int, checkInMark string, startTime time.Time, step int) string {
+
+	return ""
+}

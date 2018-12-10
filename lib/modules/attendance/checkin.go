@@ -1,19 +1,23 @@
 package attendance
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
-	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
 // for controller
-func UserCheckIn(Uid int, act *models.AttendanceActivity) error {
+func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
+	if jal == nil {
+		return errors.New("jal model cannot be null when UserCheckIn")
+	}
+	var act *models.AttendanceActivity = jal.Aid
 	if act == nil {
-		return errors.New("act cannot be null when UserCheckIn")
+		return errors.New("act model cannot be null when UserCheckIn")
 	}
 
 	todayCheckInLog := []*models.CheckInLog{}
@@ -98,30 +102,42 @@ func UserCheckIn(Uid int, act *models.AttendanceActivity) error {
 		return fmt.Errorf("not in checkIn timespan, act.checkInRule:%s", act.CheckInRule)
 	}
 
-	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("check_key", checkInKeyWill).All(&todayCheckInLog)
+	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("aid", act.Aid).Filter("check_key", checkInKeyWill).All(&todayCheckInLog)
 
 	if len(todayCheckInLog) > 0 {
 		return fmt.Errorf("the checkInKey is checked:%s", checkInKeyWill)
 	}
 
 	_, err := ormObj.Insert(&models.CheckInLog{
-		Uid:Uid,
-		Aid:act.Aid,
-		CheckInKeyType:checkInKeyTypeWill,
-		CheckInKey:checkInKeyWill,
+		Uid:            Uid,
+		Aid:            act.Aid,
+		CheckInKeyType: checkInKeyTypeWill,
+		CheckInKey:     checkInKeyWill,
 	})
 
 	return err
 }
 
-func ListUserCheckInLog(Uid int) []*models.CheckInLog {
+func ListUserCheckInLog(Uid int, Aid int) []*models.CheckInLog {
 	list := []*models.CheckInLog{}
 
 	ormObj := orm.NewOrm()
-	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).All(&list)
+	filter := ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid)
+	if Aid > 0 {
+		filter.Filter("aid", Aid)
+	}
+	filter.All(&list)
 	return list
 }
 
+type CheckInScheduleElem struct {
+	KeyMark string
+	Key     string
+	From    string
+	To      string
+}
+
 // checkin
+func GetJalSchedule(JalId int) {
 
-
+}

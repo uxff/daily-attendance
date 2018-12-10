@@ -1,13 +1,13 @@
 package attendance
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
-	"encoding/json"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
@@ -15,7 +15,7 @@ import (
 
 func ListActivities(conditions map[string]interface{}) []*models.AttendanceActivity {
 	var activities []*models.AttendanceActivity
-	filter := orm.NewOrm().QueryTable(&models.AttendanceActivity{Status:models.StatusNormal})
+	filter := orm.NewOrm().QueryTable(&models.AttendanceActivity{Status: models.StatusNormal})
 	if conditions != nil {
 		for condName, cond := range conditions {
 			filter = filter.Filter(condName, cond)
@@ -27,7 +27,7 @@ func ListActivities(conditions map[string]interface{}) []*models.AttendanceActiv
 
 func GetActivity(Aid int) *models.AttendanceActivity {
 	var ormObj = orm.NewOrm()
-	act := models.AttendanceActivity{Aid:Aid}
+	act := models.AttendanceActivity{Aid: Aid}
 	err := ormObj.Read(&act)
 	if err != nil {
 		logs.Error("load activity(%d) error:%v", Aid, err)
@@ -100,7 +100,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	}
 
 	var ormObj = orm.NewOrm()
-	act := models.AttendanceActivity{Aid:Aid}
+	act := models.AttendanceActivity{Aid: Aid}
 	err := ormObj.Read(&act)
 	if err != nil {
 		logs.Error("cannot find aid(%d) in db: %v", Aid, err)
@@ -109,7 +109,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 
 	// add jal
 	jal := models.JoinActivityLog{
-		Aid:             &act,
+		Aid:              &act,
 		Uid:              Uid,
 		IsFinish:         0,
 		RewardDispatched: 0,
@@ -147,3 +147,22 @@ func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinA
 	return list
 }
 
+// return [{"checkinkey1":{"from":"time1","to":"time2"}},...]
+type CheckInElem struct {
+	Key  string    `json:"key"` // checkInKey
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
+}
+
+type CheckInSchedule []*CheckInElem
+
+func MakeSchedule(joinTime time.Time, act *models.AttendanceActivity) []CheckInElem {
+	if act == nil {
+		return nil
+	}
+
+	for step := 0; step < act.BonusNeedStep; step++ {
+
+	}
+	return nil
+}

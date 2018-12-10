@@ -40,7 +40,7 @@
                     <td>{{.Step}}/{{.BonusNeedStep}}</td>
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
-                    <td><a href="javascript:;">打卡</a></td>
+                    <td><a href="/attendance/checkin?aid={{.Aid.Aid}}">打卡</a></td>
                 </tr>
                 {{end}}
             {{end}}

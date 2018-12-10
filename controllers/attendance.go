@@ -15,6 +15,9 @@ func init() {
 	beego.AddFuncMap("jalstatus", func(jalStatus int8) string {
 		return models.JalStatusMap[jalStatus]
 	})
+	beego.AddFuncMap("checkinperiod", func(v int8) string {
+		return models.CheckInPeriodMap[v]
+	})
 }
 
 type AttendanceController struct {
@@ -36,7 +39,7 @@ func (c *AttendanceController) Index() {
 
 func (c *AttendanceController) My() {
 	if !c.IsLogin {
-		c.Ctx.Redirect(302, c.URLFor("UserController.Index"))
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
 		return
 	}
 
@@ -51,7 +54,7 @@ func (c *AttendanceController) My() {
 
 func (c *AttendanceController) Join() {
 	if !c.IsLogin {
-		c.Ctx.Redirect(302, c.URLFor("AttendanceController.Index"))
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
 		return
 	}
 
@@ -122,7 +125,7 @@ func (c *AttendanceController) Join() {
 
 func (c *AttendanceController) Add() {
 	if !c.IsLogin {
-		c.Ctx.Redirect(302, c.URLFor("AttendanceController.Index"))
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
 		return
 	}
 
@@ -170,5 +173,67 @@ func (c *AttendanceController) Add() {
 		return
 	}
 	flash.Warning("创建活动成功 ")
+	flash.Store(&c.Controller)
+}
+
+func (c *AttendanceController) Checkin() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
+		return
+	}
+
+	c.TplName = "attendance/checkin.tpl"
+
+	aid, _ := c.GetInt("aid")
+
+	flash := beego.NewFlash()
+	if aid == 0 {
+		flash.Warning("没有指定aid")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	act := attendance.GetActivity(aid)
+	if act == nil {
+		flash.Warning("aid不存在")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	// 查看已经参与的活动
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieving, models.JalStatusNormal})
+
+	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
+	c.Data["act"] = act
+	c.Data["jals"] = jals
+
+	if len(jals) == 0 {
+		flash.Error("请参与活动%s后再来打卡", act.Name)
+		flash.Store(&c.Controller)
+		return
+	}
+
+	cils := attendance.ListUserCheckInLog(c.Userinfo.Uid, act.Aid)
+	c.Data["cils"] = cils
+	c.Data["cilsTotal"] = len(cils)
+
+	if !c.Ctx.Input.IsPost() {
+		return
+	}
+
+	if !c.CheckXSRFCookie() {
+		flash.Warning("页面过期，请刷新后重试")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	err := attendance.UserCheckIn(c.Userinfo.Uid, jals[0])
+	if err != nil {
+		flash.Warning("打卡失败：%v", err)
+		flash.Store(&c.Controller)
+		return
+	}
+
+	flash.Success("%s(%d)打卡成功", act.Name, aid)
 	flash.Store(&c.Controller)
 }

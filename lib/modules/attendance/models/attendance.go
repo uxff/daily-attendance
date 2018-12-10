@@ -22,6 +22,15 @@ const (
 	CheckInPeriodYearly   = 8 // deprecated
 )
 
+var CheckInPeriodMap = map[int8]string{
+	CheckInPeriodSecondly: "秒",
+	CheckInPeriodMinutely: "分钟",
+	CheckInPeriodHourly:   "小时",
+	CheckInPeriodDaily:    "天",
+	CheckInPeriodWeekly:   "周",
+	CheckInPeriodMonthly:  "月",
+}
+
 // its a checkin project
 type AttendanceActivity struct {
 	Aid  int    `orm:"pk;auto"`
@@ -92,6 +101,7 @@ type JoinActivityLog struct {
 	JoinPrice        int       `orm:"type(int);default(0)"`
 	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
 	BonusTotal       int       `orm:"type(int);default(0)"`
+	Schedule         string    `orm:"type(text)"`
 	//IsMissed int // is wasted
 
 }
