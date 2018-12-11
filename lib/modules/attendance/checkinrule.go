@@ -267,21 +267,21 @@ func (c *CheckInRule) GetDailyCheckInScheduleKey(jalId int, checkInKeyMark strin
 	}
 }
 
-// week day from 0
+// week day start from 0
 func (c *CheckInRule) GetWeeklyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if int(t.Weekday()) < c.DaySpanMap.StartN {
-		t = t.Add(time.Hour * 24 * 7)
+		t = t.Add(time.Hour*24*7 - time.Hour*24*time.Duration(t.Weekday()))
 	}
 	//tStart := t.YearDay() - int(t.Weekday())
 	return CheckInScheduleElem{
 		KeyMark: checkInKeyMark,
 		Key:     fmt.Sprintf("%d-%s-%sw%02d", jalId, checkInKeyMark, t.Format("2006"), t.YearDay()-int(t.Weekday())),
-		From:    fmt.Sprintf("%s 00:00:00", t.Format("2006-01-02"), c.DaySpanMap.Start),
-		To:      fmt.Sprintf("%s 23:59:59", t.Format("2006-01-02"), c.DaySpanMap.End),
+		From:    fmt.Sprintf("%s 00:00:00", t.Add(time.Hour*24*time.Duration(c.DaySpanMap.StartN)).Format("2006-01-02")),
+		To:      fmt.Sprintf("%s 23:59:59", t.Add(time.Hour*24*time.Duration(c.DaySpanMap.StartN)).Format("2006-01-02")),
 	}
 }
 
-// month from 1
+// month start from 1
 func (c *CheckInRule) GetMonthlyCheckInScheduleKey(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if t.Day() < c.DaySpanMap.StartN {
 		t = t.Add(time.Hour * 24)
