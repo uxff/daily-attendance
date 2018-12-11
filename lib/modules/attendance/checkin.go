@@ -141,9 +141,9 @@ type CheckInScheduleElem struct {
 func GetJalSchedule(jal *models.JoinActivityLog) []CheckInScheduleElem {
 	elemArr := make([]CheckInScheduleElem, 0)
 	t := jal.Created
+	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
 
 	for i := 0; i < jal.BonusNeedStep; i++ {
-		cirm := Json2CheckInRule(jal.Aid.CheckInRule)
 		d, stepElems := cirm.checkInPeriodToDuration(jal.Aid.CheckInPeriod, jal.JalId, t)
 		t = t.Add(d)
 		elemArr = append(elemArr, stepElems...)

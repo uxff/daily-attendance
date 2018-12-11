@@ -48,24 +48,35 @@ func (c *CheckInRuleMap) IsValid(checkInPeriodType int8) bool {
 	for _, rule := range *c {
 		switch checkInPeriodType {
 		case models.CheckInPeriodSecondly:
+			rule.DaySpanMap.EndN = 999
 			return true
 		case models.CheckInPeriodMinutely:
+			rule.DaySpanMap.EndN = 60
 			if !rule.IsSecondSpanValid() {
 				return false
 			}
 		case models.CheckInPeriodHourly:
+			rule.DaySpanMap.EndN = 60
 			if !rule.IsMinuteSpanValid() {
 				return false
 			}
 		case models.CheckInPeriodDaily:
+			rule.DaySpanMap.EndN = 24
 			if !rule.IsHourSpanValid() {
 				return false
 			}
 		case models.CheckInPeriodWeekly:
+			rule.DaySpanMap.EndN = 7
 			if !rule.IsWeekdaySpanValid() {
 				return false
 			}
 		case models.CheckInPeriodMonthly:
+			rule.DaySpanMap.EndN = 12
+			if !rule.IsDaySpanValid() {
+				return false
+			}
+		case models.CheckInPeriodYearly:
+			rule.DaySpanMap.EndN = 2099
 			if !rule.IsDaySpanValid() {
 				return false
 			}
