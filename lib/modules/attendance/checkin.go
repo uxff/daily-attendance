@@ -138,6 +138,50 @@ type CheckInScheduleElem struct {
 }
 
 // checkin
-func GetJalSchedule(JalId int) {
+func GetJalSchedule(jal *models.JoinActivityLog) []CheckInScheduleElem {
+	elemArr := make([]CheckInScheduleElem, 0)
+	t := jal.Created
 
+	for i := 0; i < jal.BonusNeedStep; i++ {
+		cirm := Json2CheckInRule(jal.Aid.CheckInRule)
+		d, stepElems := cirm.checkInPeriodToDuration(jal.Aid.CheckInPeriod, jal.JalId, t)
+		t = t.Add(d)
+		elemArr = append(elemArr, stepElems...)
+	}
+
+	return elemArr
+}
+
+func (c *CheckInRuleMap) checkInPeriodToDuration(checkInPeriodType int8, jalId int, t time.Time) (d time.Duration, elems []CheckInScheduleElem) {
+	if c == nil {
+		return 0, nil
+	}
+
+	for cirKey, rule := range *c {
+		switch checkInPeriodType {
+		case models.CheckInPeriodSecondly:
+			d = time.Second
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodMinutely:
+			d = time.Minute
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodHourly:
+			d = time.Hour
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodDaily:
+			d = time.Hour * 24
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodWeekly:
+			d = time.Hour * 24 * 7
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodMonthly:
+			d = time.Hour * 24 * 30
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodYearly:
+			d = time.Hour * 24 * 365
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		}
+	}
+
+	return d, elems
 }
