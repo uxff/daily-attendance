@@ -22,7 +22,7 @@ const (
 // rule for daily health:[{"HEALTH":{"timespan":"06:00-09:00"}}]
 // rule for monthly report:[{"REPORTM":{"dayspan":"01-02"}}]
 
-type CheckInRuleMap map[string]CheckInRule
+type CheckInRuleMap map[string]*CheckInRule
 
 type CheckInRule struct {
 	//CheckInKey string `json:"checkinkey"`
@@ -71,12 +71,12 @@ func (c *CheckInRuleMap) IsValid(checkInPeriodType int8) bool {
 				return false
 			}
 		case models.CheckInPeriodMonthly:
-			rule.DaySpanMap.EndN = 12
+			rule.DaySpanMap.EndN = 31
 			if !rule.IsDaySpanValid() {
 				return false
 			}
 		case models.CheckInPeriodYearly:
-			rule.DaySpanMap.EndN = 2099
+			rule.DaySpanMap.EndN = 12
 			if !rule.IsDaySpanValid() {
 				return false
 			}
@@ -98,6 +98,7 @@ func (c *CheckInRule) IsMinuteSpanValid() bool {
 
 func (c *CheckInRule) IsHourSpanValid() bool {
 	if c.TimeSpan != "" {
+		// timespan must be as 01:02-03:04
 		timeSpanStartAndEnd := strings.Split(c.TimeSpan, "-")
 		if len(timeSpanStartAndEnd) < 2 {
 			return false
@@ -110,11 +111,13 @@ func (c *CheckInRule) IsHourSpanValid() bool {
 		endHour, endMin := 0, 0
 		_, err := fmt.Sscanf(timeSpanStart, "%d:%d", &startHour, &startMin)
 		if err != nil {
+			logs.Error("sscanf %s error:%v", timeSpanStart, err)
 			return false
 		}
 
 		_, err = fmt.Sscanf(timeSpanEnd, "%d:%d", &endHour, &endMin)
 		if err != nil {
+			logs.Error("sscanf %s error:%v", timeSpanEnd, err)
 			return false
 		}
 
@@ -142,8 +145,8 @@ func (c *CheckInRule) IsWeekdaySpanValid() bool {
 }
 
 func (c *CheckInRule) IsDaySpanValid() bool {
-
 	if c.DaySpan != "" {
+		// dayspan must be as 01-02
 		daySpanStartAndEnd := strings.Split(c.DaySpan, "-")
 		if len(daySpanStartAndEnd) < 2 {
 			return false
@@ -234,7 +237,7 @@ func Json2CheckInRule(str string) CheckInRuleMap {
 }
 
 // 获取某一时间的key和对应的起始时间
-func (c CheckInRule) GetSecondlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetSecondlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	return CheckInScheduleElem{
 		KeyMark: checkInKeyMark,
 		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("20060102150405")),
@@ -243,19 +246,19 @@ func (c CheckInRule) GetSecondlyCheckInScheduleElem(jalId int, checkInKeyMark st
 	}
 }
 
-func (c CheckInRule) GetMinutelyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetMinutelyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if t.Second() < c.DaySpanMap.StartN {
 		t = t.Add(time.Minute)
 	}
 	return CheckInScheduleElem{
 		KeyMark: checkInKeyMark,
 		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("200601021504")),
-		From:    fmt.Sprintf("%s:%s", t.Format("2006-01-02 15:04"), c.DaySpanMap.Start),
-		To:      fmt.Sprintf("%s:%s", t.Format("2006-01-02 15:04"), c.DaySpanMap.End),
+		From:    fmt.Sprintf("%s:%02d", t.Format("2006-01-02 15:04"), c.DaySpanMap.StartN),
+		To:      fmt.Sprintf("%s:%02d", t.Format("2006-01-02 15:04"), c.DaySpanMap.EndN),
 	}
 }
 
-func (c CheckInRule) GetHourlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetHourlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if t.Format("04:05") < c.TimeSpanMap.Start {
 		t = t.Add(time.Hour)
 	}
@@ -267,7 +270,7 @@ func (c CheckInRule) GetHourlyCheckInScheduleElem(jalId int, checkInKeyMark stri
 	}
 }
 
-func (c CheckInRule) GetDailyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetDailyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if t.Format("15:04") < c.TimeSpanMap.Start {
 		t = t.Add(time.Hour * 24)
 	}
@@ -280,7 +283,7 @@ func (c CheckInRule) GetDailyCheckInScheduleElem(jalId int, checkInKeyMark strin
 }
 
 // week day start from 0
-func (c CheckInRule) GetWeeklyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetWeeklyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if int(t.Weekday()) < c.DaySpanMap.StartN {
 		t = t.Add(time.Hour*24*7 - time.Hour*24*time.Duration(t.Weekday()))
 	}
@@ -293,27 +296,27 @@ func (c CheckInRule) GetWeeklyCheckInScheduleElem(jalId int, checkInKeyMark stri
 }
 
 // month start from 1
-func (c CheckInRule) GetMonthlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetMonthlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if t.Day() < c.DaySpanMap.StartN {
 		t = t.Add(time.Hour * 24 * 30)
 	}
 	return CheckInScheduleElem{
 		KeyMark: checkInKeyMark,
 		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("200601")),
-		From:    fmt.Sprintf("%s-%02d 00:00:00", t.Format("2006-01"), c.DaySpanMap.Start),
-		To:      fmt.Sprintf("%s-%02d 23:59:59", t.Format("2006-01"), c.DaySpanMap.End),
+		From:    fmt.Sprintf("%s-%s 00:00:00", t.Format("2006-01"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s-%s 23:59:59", t.Format("2006-01"), c.DaySpanMap.End),
 	}
 }
 
 // not supported
-func (c CheckInRule) GetYearlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
+func (c *CheckInRule) GetYearlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	if int(t.Month()) < c.DaySpanMap.StartN {
 		t = t.Add(time.Hour * 24 * 30)
 	}
 	return CheckInScheduleElem{
 		KeyMark: checkInKeyMark,
 		Key:     fmt.Sprintf("%d-%s-%s", jalId, checkInKeyMark, t.Format("2006")),
-		From:    fmt.Sprintf("%s-%02d-01 00:00:00", t.Format("2006"), c.DaySpanMap.Start),
-		To:      fmt.Sprintf("%s-%02d-30 23:59:59", t.Format("2006"), c.DaySpanMap.End),
+		From:    fmt.Sprintf("%s-%s-01 00:00:00", t.Format("2006"), c.DaySpanMap.Start),
+		To:      fmt.Sprintf("%s-%s-30 23:59:59", t.Format("2006"), c.DaySpanMap.End),
 	}
 }
