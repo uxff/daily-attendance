@@ -11,7 +11,7 @@ func TestCheckInRule(t *testing.T) {
 	now := time.Now()
 	t.Logf("t=%v weekday=%d yearday=%d day=%d", now, now.Weekday(), now.YearDay(), now.Day())
 
-	cirm := Json2CheckInRule(`{"s":{"dayspan":""},"i":{"dayspan":"00-10"},"H":{"timespan":"10:00-29:59"},"D":{"timespan":"18:00-23:59"},"W":{"dayspan":"01-02"},"M":{"dayspan":"25-28"},"Y":{"dayspan":"05-12"}}`)
+	cirm := Json2CheckInRule(`{"s":{"dayspan":""},"i":{"dayspan":"00-10"},"H":{"timespan":"10:00-18:59"},"D":{"timespan":"18:00-23:59"},"W":{"dayspan":"02-04"},"M":{"dayspan":"25-28"},"Y":{"dayspan":"05-12"}}`)
 	t.Errorf("cirm=%+v", cirm)
 
 	t.Logf("%v S=%+v", cirm["s"].IsSecondSpanValid(), cirm["s"].GetSecondlyCheckInScheduleElem(jalId, key, now))
