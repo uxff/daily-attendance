@@ -236,6 +236,13 @@ func Json2CheckInRule(str string) CheckInRuleMap {
 	return cir
 }
 
+type CheckInScheduleElem struct {
+	KeyMark string
+	Key     string
+	From    string
+	To      string
+}
+
 // 获取某一时间的key和对应的起始时间
 func (c *CheckInRule) GetSecondlyCheckInScheduleElem(jalId int, checkInKeyMark string, t time.Time) CheckInScheduleElem {
 	return CheckInScheduleElem{
@@ -321,4 +328,38 @@ func (c *CheckInRule) GetYearlyCheckInScheduleElem(jalId int, checkInKeyMark str
 		From:    fmt.Sprintf("%s-%s-01 00:00:00", t.Format("2006"), c.DaySpanMap.Start),
 		To:      fmt.Sprintf("%s-%s-30 23:59:59", t.Format("2006"), c.DaySpanMap.End),
 	}
+}
+
+func (c *CheckInRuleMap) GetCheckInScheduleElems(checkInPeriodType int8, jalId int, t time.Time) (d time.Duration, elems []CheckInScheduleElem) {
+	if c == nil {
+		return 0, nil
+	}
+
+	for cirKey, rule := range *c {
+		switch checkInPeriodType {
+		case models.CheckInPeriodSecondly:
+			d = time.Second
+			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodMinutely:
+			d = time.Minute
+			elems = append(elems, rule.GetMinutelyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodHourly:
+			d = time.Hour
+			elems = append(elems, rule.GetHourlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodDaily:
+			d = time.Hour * 24
+			elems = append(elems, rule.GetDailyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodWeekly:
+			d = time.Hour * 24 * 7
+			elems = append(elems, rule.GetWeeklyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodMonthly:
+			d = time.Hour * 24 * 30
+			elems = append(elems, rule.GetMonthlyCheckInScheduleElem(jalId, cirKey, t))
+		case models.CheckInPeriodYearly:
+			d = time.Hour * 24 * 365
+			elems = append(elems, rule.GetYearlyCheckInScheduleElem(jalId, cirKey, t))
+		}
+	}
+
+	return d, elems
 }

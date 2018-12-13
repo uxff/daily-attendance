@@ -123,6 +123,15 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		return err
 	}
 
+	jalSchedule, err := json.Marshal(GetJalSchedule(&jal))
+	if err != nil {
+		logs.Error("marshal schedule error:%v", err)
+		return err
+	}
+
+	jal.Schedule = string(jal.Schedule)
+	ormObj.Update(jal, "schedule")
+
 	//
 
 	return nil
