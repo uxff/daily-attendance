@@ -30,14 +30,14 @@ type CheckInRule struct {
 	TimeSpanMap struct {
 		Start string
 		End   string
-	}
+	} `json:"-"`
 	DaySpan    string `json:"dayspan,omitempty"`
 	DaySpanMap struct {
 		Start  string
 		End    string
 		StartN int
 		EndN   int
-	}
+	} `json:"-"`
 }
 
 func (c *CheckInRuleMap) IsValid(checkInPeriodType int8) bool {

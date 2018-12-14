@@ -129,8 +129,12 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		return err
 	}
 
-	jal.Schedule = string(jal.Schedule)
-	ormObj.Update(jal, "schedule")
+	jal.Schedule = string(jalSchedule)
+	_, err = ormObj.Update(&jal, "schedule")
+	if err != nil {
+		logs.Error("update jal schedule error:%v", err)
+		return err
+	}
 
 	//
 
