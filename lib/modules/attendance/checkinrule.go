@@ -241,6 +241,7 @@ type CheckInScheduleElem struct {
 	Key     string
 	From    string
 	To      string
+	CilId   int
 }
 
 // 获取某一时间的key和对应的起始时间

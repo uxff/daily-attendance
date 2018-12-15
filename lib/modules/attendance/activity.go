@@ -116,6 +116,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		BonusNeedStep:    act.BonusNeedStep,
 		JoinUtlId:        UtlId,
 		Status:           models.StatusNormal,
+		Schedulemap:      map[string]string{"a": "b"},
 	}
 	_, err = ormObj.Insert(&jal)
 	if err != nil {
@@ -123,7 +124,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		return err
 	}
 
-	jalSchedule, err := json.Marshal(GetJalSchedule(&jal))
+	jalSchedule, err := json.Marshal(MakeJalSchedule(&jal))
 	if err != nil {
 		logs.Error("marshal schedule error:%v", err)
 		return err
@@ -158,24 +159,4 @@ func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinA
 	filter.All(&list)
 
 	return list
-}
-
-// return [{"checkinkey1":{"from":"time1","to":"time2"}},...]
-type CheckInElem struct {
-	Key  string    `json:"key"` // checkInKey
-	From time.Time `json:"from"`
-	To   time.Time `json:"to"`
-}
-
-type CheckInSchedule []*CheckInElem
-
-func MakeSchedule(joinTime time.Time, act *models.AttendanceActivity) []CheckInElem {
-	if act == nil {
-		return nil
-	}
-
-	for step := 0; step < act.BonusNeedStep; step++ {
-
-	}
-	return nil
 }

@@ -88,20 +88,21 @@ type JoinActivityLog struct {
 	JalId int                 `orm:"pk;auto"`
 	Aid   *AttendanceActivity `orm:"rel(one);default(0);null"`
 	//Aidd           int       `orm:"type(int)"`
-	Uid              int       `orm:"type(int)"`
-	Created          time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated          time.Time `orm:"auto_now;type(datetime)"`
-	StartDate        string    `orm:"type(datetime)"` //mysql.Date?
-	BonusNeedStep    int       `orm:"type(int);default(0)"`
-	Step             int       `orm:"type(int);default(0)"`
-	LastStepDate     string    `orm:"time(datetime)"`           // needed?
-	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched int8      `orm:"type(tinyint);default(0)"`
-	JoinUtlId        int       `orm:"type(int);default(0)"`
-	JoinPrice        int       `orm:"type(int);default(0)"`
-	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
-	BonusTotal       int       `orm:"type(int);default(0)"`
-	Schedule         string    `orm:"type(text)"`
+	Uid              int               `orm:"type(int)"`
+	Created          time.Time         `orm:"auto_now_add;type(datetime)"`
+	Updated          time.Time         `orm:"auto_now;type(datetime)"`
+	StartDate        string            `orm:"type(datetime)"` //mysql.Date?
+	BonusNeedStep    int               `orm:"type(int);default(0)"`
+	Step             int               `orm:"type(int);default(0)"`
+	LastStepDate     string            `orm:"time(datetime)"`           // needed?
+	IsFinish         int8              `orm:"type(tinyint);default(0)"` // is finishing, w
+	RewardDispatched int8              `orm:"type(tinyint);default(0)"`
+	JoinUtlId        int               `orm:"type(int);default(0)"`
+	JoinPrice        int               `orm:"type(int);default(0)"`
+	Status           int8              `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	BonusTotal       int               `orm:"type(int);default(0)"`
+	Schedule         string            `orm:"type(text)"` // json of
+	Schedulemap      map[string]string `orm:"type(json);defualt('')"`
 	//IsMissed int // is wasted
 
 }
@@ -118,13 +119,14 @@ const (
 type CheckInLog struct {
 	CilId int `orm:"pk;auto"`
 	//JalId int `orm:"-"` // needed?
-	Uid            int       `orm:"type(int)"`
-	Aid            int       `orm:"type(int);default(0)"`
-	CheckInKeyType string    `orm:"size(32)"`
-	CheckInKey     string    `orm:"size(32)"` // unique of a user
-	Created        time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated        time.Time `orm:"auto_now;type(datetime)"`
-	Status         int8      `orm:"type(tinyint);default(1)"`
+	Uid            int               `orm:"type(int)"`
+	Aid            int               `orm:"type(int);default(0)"`
+	CheckInKeyType string            `orm:"size(32)"`
+	CheckInKey     string            `orm:"size(32)"` // unique of a user
+	Created        time.Time         `orm:"auto_now_add;type(datetime)"`
+	Updated        time.Time         `orm:"auto_now;type(datetime)"`
+	Status         int8              `orm:"type(tinyint);default(1)"`
+	Map            map[string]string `orm:"type(json);defualt('')"`
 }
 
 const (
