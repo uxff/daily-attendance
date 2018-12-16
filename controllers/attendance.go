@@ -77,7 +77,7 @@ func (c *AttendanceController) Join() {
 	}
 
 	// 查看已经参与的活动
-	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieving, models.JalStatusNormal})
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieved, models.JalStatusInited})
 
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
 	c.Data["act"] = act
@@ -201,7 +201,7 @@ func (c *AttendanceController) Checkin() {
 	}
 
 	// 查看已经参与的活动
-	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieving, models.JalStatusNormal})
+	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieved, models.JalStatusInited})
 
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
 	c.Data["act"] = act
@@ -236,4 +236,29 @@ func (c *AttendanceController) Checkin() {
 
 	flash.Success("%s(%d)打卡成功", act.Name, aid)
 	flash.Store(&c.Controller)
+}
+
+func (c *AttendanceController) MyCheckInLog() {
+	if !c.IsLogin {
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
+		return
+	}
+
+	c.TplName = "attendance/mycheckinlog.tpl"
+
+	jalId, _ := c.GetInt("jalid")
+	flash := beego.NewFlash()
+
+	if jalId == 0 {
+		flash.Warning("没有指定jalid")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	jal := attendance.GetJoinActivityLog(jalId)
+
+	c.Data["jal"] = jal
+	c.Data["schedules"] = attendance.Json2CheckInSchedules(jal.Schedule)
+	c.Data["act"] = attendance.GetActivity(jal.Aid.Aid)
+
 }

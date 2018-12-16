@@ -67,19 +67,19 @@ type AttendanceActivity struct {
 }
 
 const (
-	JalStatusNormal    = 1
-	JalStatusAchieving = 2 // more than 5 days
-	JalStatusMissed    = 3 // disachived, missed, same as wasted
-	JalStatusStopped   = 4 // stopped by user manual
-	JalStatusShared    = 5 //
+	JalStatusInited   = 1
+	JalStatusAchieved = 2 // more than 5 days
+	JalStatusMissed   = 3 // disachived, missed, same as wasted
+	JalStatusStopped  = 4 // stopped by user manual
+	JalStatusShared   = 5 //
 )
 
 var JalStatusMap = map[int8]string{
-	JalStatusNormal:    "坚持中",
-	JalStatusAchieving: "达标分红中",
-	JalStatusMissed:    "中断",
-	JalStatusStopped:   "停止",
-	JalStatusShared:    "被瓜分",
+	JalStatusInited:   "坚持中",
+	JalStatusAchieved: "达标分红中",
+	JalStatusMissed:   "坚持未遂",
+	JalStatusStopped:  "停止",
+	JalStatusShared:   "被瓜分",
 }
 
 // unique (user+aid+(status=1))
@@ -88,21 +88,21 @@ type JoinActivityLog struct {
 	JalId int                 `orm:"pk;auto"`
 	Aid   *AttendanceActivity `orm:"rel(one);default(0);null"`
 	//Aidd           int       `orm:"type(int)"`
-	Uid              int               `orm:"type(int)"`
-	Created          time.Time         `orm:"auto_now_add;type(datetime)"`
-	Updated          time.Time         `orm:"auto_now;type(datetime)"`
-	StartDate        string            `orm:"type(datetime)"` //mysql.Date?
-	BonusNeedStep    int               `orm:"type(int);default(0)"`
-	Step             int               `orm:"type(int);default(0)"`
-	LastStepDate     string            `orm:"time(datetime)"`           // needed?
-	IsFinish         int8              `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched int8              `orm:"type(tinyint);default(0)"`
-	JoinUtlId        int               `orm:"type(int);default(0)"`
-	JoinPrice        int               `orm:"type(int);default(0)"`
-	Status           int8              `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
-	BonusTotal       int               `orm:"type(int);default(0)"`
-	Schedule         string            `orm:"type(text)"` // json of
-	Schedulemap      map[string]string `orm:"type(json);defualt('')"`
+	Uid              int       `orm:"type(int)"`
+	Created          time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated          time.Time `orm:"auto_now;type(datetime)"`
+	StartDate        string    `orm:"type(datetime)"` //mysql.Date?
+	BonusNeedStep    int       `orm:"type(int);default(0)"`
+	Step             int       `orm:"type(int);default(0)"`
+	LastStepDate     string    `orm:"time(datetime)"`           // needed?
+	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
+	RewardDispatched int8      `orm:"type(tinyint);default(0)"`
+	JoinUtlId        int       `orm:"type(int);default(0)"`
+	JoinPrice        int       `orm:"type(int);default(0)"`
+	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	BonusTotal       int       `orm:"type(int);default(0)"`
+	Schedule         string    `orm:"type(text)"` // json of
+	//Schedulemap      map[string]string `orm:"type(json);defualt('')"`
 	//IsMissed int // is wasted
 
 }
@@ -117,16 +117,16 @@ const (
 // user - 1:N - CilId
 // CheckInKey 1:1 CilId
 type CheckInLog struct {
-	CilId int `orm:"pk;auto"`
-	//JalId int `orm:"-"` // needed?
-	Uid            int               `orm:"type(int)"`
-	Aid            int               `orm:"type(int);default(0)"`
-	CheckInKeyType string            `orm:"size(32)"`
-	CheckInKey     string            `orm:"size(32)"` // unique of a user
-	Created        time.Time         `orm:"auto_now_add;type(datetime)"`
-	Updated        time.Time         `orm:"auto_now;type(datetime)"`
-	Status         int8              `orm:"type(tinyint);default(1)"`
-	Map            map[string]string `orm:"type(json);defualt('')"`
+	CilId          int       `orm:"pk;auto"`
+	JalId          int       `orm:"type(int)"` // needed? need tobe struct JoinActivityLog?
+	Uid            int       `orm:"type(int)"`
+	Aid            int       `orm:"type(int);default(0)"`
+	CheckInKeyType string    `orm:"size(32)"`
+	CheckInKey     string    `orm:"size(32)"` // unique of a user
+	Created        time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated        time.Time `orm:"auto_now;type(datetime)"`
+	Status         int8      `orm:"type(tinyint);default(1)"`
+	//Map            map[string]string `orm:"type(json);defualt('')"`
 }
 
 const (

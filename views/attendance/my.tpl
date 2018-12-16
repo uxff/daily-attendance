@@ -19,6 +19,7 @@
                 <tr>
                     <td>参与时间</td>
                     <td>活动名称</td>
+                    <td>打卡要求</td>
                     <td>花费积分</td>
                     <td>完成度</td>
                     <td>状态</td>
@@ -36,11 +37,15 @@
                 <tr>
                     <td>{{timefmtm .Created}}</td>
                     <td>{{.Aid.Name}}</td>
+                    <td>{{.Aid.CheckInRule}}/{{.Aid.BonusNeedStep}}{{checkinperiod .Aid.CheckInPeriod}}</td>
                     <td>{{.JoinPrice}}</td>
                     <td>{{.Step}}/{{.BonusNeedStep}}</td>
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
-                    <td><a href="/attendance/checkin?aid={{.Aid.Aid}}">打卡</a></td>
+                    <td>
+                        <a href="/attendance/checkin?aid={{.Aid.Aid}}">打卡</a>
+                        <a href="/attendance/mycheckinlog?jalid={{.JalId}}">详情</a>
+                    </td>
                 </tr>
                 {{end}}
             {{end}}

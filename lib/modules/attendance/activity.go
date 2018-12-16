@@ -107,6 +107,8 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		return err
 	}
 
+	// look up joined and achieving jal
+
 	// add jal
 	jal := models.JoinActivityLog{
 		Aid:              &act,
@@ -116,7 +118,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		BonusNeedStep:    act.BonusNeedStep,
 		JoinUtlId:        UtlId,
 		Status:           models.StatusNormal,
-		Schedulemap:      map[string]string{"a": "b"},
+		//Schedulemap:      map[string]string{"a": "b"},
 	}
 	_, err = ormObj.Insert(&jal)
 	if err != nil {
@@ -159,4 +161,17 @@ func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinA
 	filter.All(&list)
 
 	return list
+}
+
+func GetJoinActivityLog(JalId int) *models.JoinActivityLog {
+	jal := models.JoinActivityLog{JalId: JalId}
+	ormObj := orm.NewOrm()
+	err := ormObj.Read(&jal)
+
+	if err != nil {
+		logs.Error("cannot find jalId(%d) in db: %v", JalId, err)
+		return nil
+	}
+
+	return &jal
 }

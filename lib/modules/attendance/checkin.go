@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"encoding/json"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
-// for controller, exclusive checkin, not common checkin
+// for controller, attendance checkin is an exclusive checkin type, not common checkin
 func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	if jal == nil {
 		return errors.New("jal model cannot be null when UserCheckIn")
@@ -23,23 +22,36 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 
 	todayCheckInLog := []*models.CheckInLog{}
 	now := time.Now()
+	nowStr := now.Format("2006-01-02 15:04:05")
 
 	ormObj := orm.NewOrm()
 
 	// 查看指定好的计划，只用判断计划中时间是否满足
-	schedules := make([]*CheckInScheduleElem, 0)
-	err := json.Unmarshal([]byte(jal.Schedule), &schedules)
-	if err != nil {
-		return fmt.Errorf("error format jal schedules:%s json.Unmarshal error:%v", jal.Schedule, err)
+	schedules := Json2CheckInSchedules(jal.Schedule)
+	if schedules == nil {
+		return fmt.Errorf("error format jal schedules:%s", jal.Schedule)
 	}
 
-	scheduleElemIdx := IsInSchedule(now, schedules)
-	if scheduleElemIdx == -1 {
-		return fmt.Errorf("now(%v) is not in jal(%d)s schedules", now, jal.JalId)
+	minTime, maxTime := schedules.GetMinMax()
+	if nowStr < minTime {
+		return fmt.Errorf("too ealier, jal schedule min:%s max:%s", minTime, maxTime)
 	}
 
-	scheduleElem := schedules[scheduleElemIdx]
+	// 当前时间是否在活动的时间规则内
+	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
+	isInRule := cirm.IsInTimeSpan(now, jal.Aid.CheckInPeriod)
 
+	if !isInRule {
+		return fmt.Errorf("now(%v) is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
+	}
+
+	// 当前时间是否在已计划5天时间内
+	stepIdx, scheduleElemIdx := schedules.IsTimeIn(now)
+	if stepIdx == -1 || scheduleElemIdx == -1 {
+		// 如果已经达标，则不再时间段内
+	}
+
+	scheduleElem := schedules[stepIdx][scheduleElemIdx]
 	checkInKeyTypeWill := scheduleElem.KeyMark
 	checkInKeyWill := scheduleElem.Key
 
@@ -55,21 +67,59 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		return fmt.Errorf("the checkInKey is already checked:%s", checkInKeyWill)
 	}
 
-	cilId, err := ormObj.Insert(&models.CheckInLog{
-		Uid:            Uid,
-		Aid:            act.Aid,
-		CheckInKeyType: checkInKeyTypeWill,
-		CheckInKey:     checkInKeyWill,
-		Map:            map[string]string{"a": "c"},
-	})
+	switch jal.Status {
+	case models.JalStatusInited:
+		// is going to achieved
+		// must be sequence step
+		// need step up
+		if stepIdx == -1 || scheduleElemIdx == -1 {
+			// 如果已经达标，则不再时间段内
+			return fmt.Errorf("now(%v) is not in jal(%d)s schedules(%v)", jal.JalId, jal.Schedule)
+		}
 
-	if err != nil {
-		return fmt.Errorf("insert checkin error:%v", err)
-	}
-	// todo: update user schedule and step
-	err = UpdateJalStep(jal, scheduleElem, int(cilId))
-	if err != nil {
-		return fmt.Errorf("update jal step error:%v", err)
+		if jal.Step == stepIdx {
+			// its the ok time
+			jal.Step++
+			if jal.Step >= jal.BonusNeedStep {
+				jal.Status = models.JalStatusAchieved
+				// todo: notify to calc jal bonus next step
+			}
+			// save jal, insert checkInLog
+
+			// insert db
+			cilId, err := ormObj.Insert(&models.CheckInLog{
+				JalId:          jal.JalId,
+				Uid:            Uid,
+				Aid:            act.Aid,
+				CheckInKeyType: checkInKeyTypeWill,
+				CheckInKey:     checkInKeyWill,
+			})
+
+			if err != nil {
+				return fmt.Errorf("insert checkin error:%v", err)
+			}
+
+			schedules[stepIdx][scheduleElemIdx].CilId = int(cilId)
+
+			// update db
+			_, err = ormObj.Update(jal, "schedule", "step", "status")
+			//err = UpdateJalStep(jal, schedules, stepIdx, int(cilId))
+			if err != nil {
+				return fmt.Errorf("update jal step error:%v", err)
+			}
+
+		}
+	case models.JalStatusAchieved:
+		// will get bonus
+		jal.Step++
+		_, err := ormObj.Update(jal, "step")
+		//err = UpdateJalStep(jal, schedules, stepIdx, int(cilId))
+		if err != nil {
+			return fmt.Errorf("update jal step error:%v", err)
+		}
+
+	case models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared:
+		return fmt.Errorf("jal(%d) is in unmormal stauts:%v", jal.JalId, models.JalStatusMap[jal.Status])
 	}
 
 	return nil
@@ -88,8 +138,9 @@ func ListUserCheckInLog(Uid int, Aid int) []*models.CheckInLog {
 }
 
 // checkin
-func MakeJalSchedule(jal *models.JoinActivityLog) []CheckInScheduleElem {
-	elemArr := make([]CheckInScheduleElem, 0)
+// @return map[step][]*CheckInScheduleElem
+func MakeJalSchedule(jal *models.JoinActivityLog) CheckInSchedules {
+	elemArr := make(CheckInSchedules, 0)
 	t := jal.Created
 	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
 
@@ -99,46 +150,33 @@ func MakeJalSchedule(jal *models.JoinActivityLog) []CheckInScheduleElem {
 	for i := 0; i < jal.BonusNeedStep; i++ {
 		d, stepElems := cirm.GetCheckInScheduleElems(jal.Aid.CheckInPeriod, jal.JalId, t)
 		t = t.Add(d)
-		elemArr = append(elemArr, stepElems...)
+		elemArr = append(elemArr, stepElems)
+		//elemArr[i] = stepElems
 	}
 
 	return elemArr
 }
 
-func IsInSchedule(t time.Time, elems []*CheckInScheduleElem) int {
-	tstr := t.Format("2006-01-02 15:04:05")
-	for i, elem := range elems {
-		if elem.From <= tstr && tstr <= elem.To {
-			return i
-		}
-	}
-	return -1
-}
+//func IsInScheduleMap(t time.Time, elemMap map[int][]*CheckInScheduleElem) (step int, elemIdx int, elem *CheckInScheduleElem) {
+//	tstr := t.Format("2006-01-02 15:04:05")
+//	for step, elems := range elemMap {
+//		for i, elem := range elems {
+//			if elem.From <= tstr && tstr <= elem.To {
+//				return step, i, elem
+//			}
+//		}
+//	}
+//	return -1, -1, nil
+//}
 
-func UpdateJalStep(jal *models.JoinActivityLog, elem *CheckInScheduleElem, CilId int) error {
+func UpdateJalStep(jal *models.JoinActivityLog, schedules CheckInSchedules, step int, CilId int) error {
 
 	ormObj := orm.NewOrm()
 
-	schedules := make([]*CheckInScheduleElem, 0)
-	err := json.Unmarshal([]byte(jal.Schedule), &schedules)
-	if err != nil {
-		return fmt.Errorf("error format jal schedules:%s json.Unmarshal error:%v", jal.Schedule, err)
-	}
+	jal.Schedule = schedules.ToJson()
+	jal.Step = step
 
-	for _, e := range schedules {
-		if e.KeyMark == elem.KeyMark && e.Key == elem.Key {
-			e.CilId = CilId
-		}
-	}
-
-	scheduleJson, err := json.Marshal(&schedules)
-	if err != nil {
-		return fmt.Errorf("error format jal schedules:%s json.Unmarshal error:%v", jal.Schedule, err)
-	}
-
-	jal.Schedule = string(scheduleJson)
-
-	_, err = ormObj.Update(jal, "schedule")
+	_, err := ormObj.Update(jal, "schedule", "step")
 	if err != nil {
 		return fmt.Errorf("error when update jal schedule, jalid:%d error:%v", jal.JalId, err)
 	}
