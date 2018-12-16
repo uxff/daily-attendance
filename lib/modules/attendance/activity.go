@@ -175,3 +175,24 @@ func GetJoinActivityLog(JalId int) *models.JoinActivityLog {
 
 	return &jal
 }
+
+func checkInPeriodToDuration(checkInPeriodType int8) (d time.Duration) {
+	switch checkInPeriodType {
+	case models.CheckInPeriodSecondly:
+		d = time.Second
+	case models.CheckInPeriodMinutely:
+		d = time.Minute
+	case models.CheckInPeriodHourly:
+		d = time.Hour
+	case models.CheckInPeriodDaily:
+		d = time.Hour * 24
+	case models.CheckInPeriodWeekly:
+		d = time.Hour * 24 * 7
+	case models.CheckInPeriodMonthly:
+		d = time.Hour * 24 * 30
+	case models.CheckInPeriodYearly:
+		d = time.Hour * 24 * 365
+	}
+
+	return 0
+}

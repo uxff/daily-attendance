@@ -39,32 +39,22 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 
 	// 当前时间是否在活动的时间规则内
 	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
-	isInRule := cirm.IsInTimeSpan(now, jal.Aid.CheckInPeriod)
+	cirKey, cir := cirm.IsInTimeSpan(now, jal.Aid.CheckInPeriod)
 
-	if !isInRule {
-		return fmt.Errorf("now(%v) is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
+	if cir == nil {
+		return fmt.Errorf("now is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
 	}
 
-	// 当前时间是否在已计划5天时间内
-	stepIdx, scheduleElemIdx := schedules.IsTimeIn(now)
-	if stepIdx == -1 || scheduleElemIdx == -1 {
-		// 如果已经达标，则不再时间段内
-	}
+	checkInElem := cir.GetCheckInScheduleElem(jal.Aid.CheckInPeriod, jal.JalId, now, cirKey)
+	checkInKeyTypeWill := cirKey
+	checkInKeyWill := checkInElem.Key
 
-	scheduleElem := schedules[stepIdx][scheduleElemIdx]
-	checkInKeyTypeWill := scheduleElem.KeyMark
-	checkInKeyWill := scheduleElem.Key
-
-	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s elem=%+v", checkInKeyTypeWill, checkInKeyWill, scheduleElem)
-
-	if checkInKeyWill == "" {
-		return fmt.Errorf("not in checkIn timespan, act.checkInRule:%s", act.CheckInRule)
-	}
+	//logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s elem=%+v", checkInKeyTypeWill, checkInKeyWill, scheduleElem)
 
 	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("aid", act.Aid).Filter("check_in_key", checkInKeyWill).All(&todayCheckInLog)
 
 	if len(todayCheckInLog) > 0 {
-		return fmt.Errorf("the checkInKey is already checked:%s", checkInKeyWill)
+		return fmt.Errorf("the checkInKey(%s) is already checked for jal:%d", checkInKeyWill, jal.JalId)
 	}
 
 	switch jal.Status {
@@ -72,6 +62,8 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		// is going to achieved
 		// must be sequence step
 		// need step up
+		// 当前时间是否在已计划5天时间内 检查5天内
+		stepIdx, scheduleElemIdx := schedules.IsTimeIn(now)
 		if stepIdx == -1 || scheduleElemIdx == -1 {
 			// 如果已经达标，则不再时间段内
 			return fmt.Errorf("now(%v) is not in jal(%d)s schedules(%v)", jal.JalId, jal.Schedule)
@@ -109,10 +101,26 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			}
 
 		}
+		logs.Debug("jal.Step=%d stepIdx=%d ", jal.Step, stepIdx)
+
 	case models.JalStatusAchieved:
 		// will get bonus
 		jal.Step++
-		_, err := ormObj.Update(jal, "step")
+
+		// insert db
+		_, err := ormObj.Insert(&models.CheckInLog{
+			JalId:          jal.JalId,
+			Uid:            Uid,
+			Aid:            act.Aid,
+			CheckInKeyType: checkInKeyTypeWill,
+			CheckInKey:     checkInKeyWill,
+		})
+
+		if err != nil {
+			return fmt.Errorf("insert checkin error:%v", err)
+		}
+
+		_, err = ormObj.Update(jal, "step")
 		//err = UpdateJalStep(jal, schedules, stepIdx, int(cilId))
 		if err != nil {
 			return fmt.Errorf("update jal step error:%v", err)
@@ -146,40 +154,14 @@ func MakeJalSchedule(jal *models.JoinActivityLog) CheckInSchedules {
 
 	cirm.IsValid(jal.Aid.CheckInPeriod)
 	//logs.Debug("after IsValid, cirm=%+v", cirm)
+	d := checkInPeriodToDuration(jal.Aid.CheckInPeriod)
 
 	for i := 0; i < jal.BonusNeedStep; i++ {
-		d, stepElems := cirm.GetCheckInScheduleElems(jal.Aid.CheckInPeriod, jal.JalId, t)
+		stepElems := cirm.GetCheckInScheduleElems(jal.Aid.CheckInPeriod, jal.JalId, t)
 		t = t.Add(d)
 		elemArr = append(elemArr, stepElems)
 		//elemArr[i] = stepElems
 	}
 
 	return elemArr
-}
-
-//func IsInScheduleMap(t time.Time, elemMap map[int][]*CheckInScheduleElem) (step int, elemIdx int, elem *CheckInScheduleElem) {
-//	tstr := t.Format("2006-01-02 15:04:05")
-//	for step, elems := range elemMap {
-//		for i, elem := range elems {
-//			if elem.From <= tstr && tstr <= elem.To {
-//				return step, i, elem
-//			}
-//		}
-//	}
-//	return -1, -1, nil
-//}
-
-func UpdateJalStep(jal *models.JoinActivityLog, schedules CheckInSchedules, step int, CilId int) error {
-
-	ormObj := orm.NewOrm()
-
-	jal.Schedule = schedules.ToJson()
-	jal.Step = step
-
-	_, err := ormObj.Update(jal, "schedule", "step")
-	if err != nil {
-		return fmt.Errorf("error when update jal schedule, jalid:%d error:%v", jal.JalId, err)
-	}
-
-	return nil
 }

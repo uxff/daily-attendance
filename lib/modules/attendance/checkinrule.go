@@ -227,43 +227,47 @@ func (c *CheckInRule) IsInWeekdaySpan(t time.Time) bool {
 	return false
 }
 
-func (c *CheckInRuleMap) IsInTimeSpan(t time.Time, checkInPeriodType int8) bool {
+func (c *CheckInRuleMap) IsInTimeSpan(t time.Time, checkInPeriodType int8) (ruleKey string, rule *CheckInRule) {
 	if c == nil {
-		return false
+		return "", nil
 	}
 
-	for _, rule := range *c {
+	if !c.IsValid(checkInPeriodType) {
+		return "", nil
+	}
+
+	for cirKey, rule := range *c {
 		switch checkInPeriodType {
 		case models.CheckInPeriodSecondly:
-			return true
+			return cirKey, rule
 		case models.CheckInPeriodMinutely:
 			if rule.IsInSecondSpan(t) {
-				return true
+				return cirKey, rule
 			}
 		case models.CheckInPeriodHourly:
 			if rule.IsInMinuteSpan(t) {
-				return true
+				return cirKey, rule
 			}
 		case models.CheckInPeriodDaily:
 			if rule.IsInHourSpan(t) {
-				return true
+				return cirKey, rule
 			}
 		case models.CheckInPeriodWeekly:
 			if rule.IsInWeekdaySpan(t) {
-				return true
+				return cirKey, rule
 			}
 		case models.CheckInPeriodMonthly:
 			if rule.IsInDaySpan(t) {
-				return true
+				return cirKey, rule
 			}
 		case models.CheckInPeriodYearly:
 			if rule.IsInDaySpan(t) {
-				return true
+				return cirKey, rule
 			}
 		}
 	}
 
-	return false
+	return "", nil
 }
 
 func Json2CheckInRule(str string) CheckInRuleMap {
@@ -370,38 +374,43 @@ func (c *CheckInRule) GetYearlyCheckInScheduleElem(jalId int, checkInKeyMark str
 	}
 }
 
-func (c *CheckInRuleMap) GetCheckInScheduleElems(checkInPeriodType int8, jalId int, t time.Time) (d time.Duration, elems []*CheckInScheduleElem) {
+// 用于:创建jal;checkin前检查
+// 返回：一天可能多条记录 一天一条map
+func (c *CheckInRuleMap) GetCheckInScheduleElems(checkInPeriodType int8, jalId int, t time.Time) (elems []*CheckInScheduleElem) {
 	if c == nil {
-		return 0, nil
+		return nil
 	}
 
 	for cirKey, rule := range *c {
-		switch checkInPeriodType {
-		case models.CheckInPeriodSecondly:
-			d = time.Second
-			elems = append(elems, rule.GetSecondlyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodMinutely:
-			d = time.Minute
-			elems = append(elems, rule.GetMinutelyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodHourly:
-			d = time.Hour
-			elems = append(elems, rule.GetHourlyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodDaily:
-			d = time.Hour * 24
-			elems = append(elems, rule.GetDailyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodWeekly:
-			d = time.Hour * 24 * 7
-			elems = append(elems, rule.GetWeeklyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodMonthly:
-			d = time.Hour * 24 * 30
-			elems = append(elems, rule.GetMonthlyCheckInScheduleElem(jalId, cirKey, t))
-		case models.CheckInPeriodYearly:
-			d = time.Hour * 24 * 365
-			elems = append(elems, rule.GetYearlyCheckInScheduleElem(jalId, cirKey, t))
-		}
+		elems = append(elems, rule.GetCheckInScheduleElem(checkInPeriodType, jalId, t, cirKey))
 	}
 
-	return d, elems
+	return elems
+}
+
+func (c *CheckInRule) GetCheckInScheduleElem(checkInPeriodType int8, jalId int, t time.Time, cirKey string) *CheckInScheduleElem {
+	if c == nil {
+		return nil
+	}
+
+	switch checkInPeriodType {
+	case models.CheckInPeriodSecondly:
+		return c.GetSecondlyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodMinutely:
+		return c.GetMinutelyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodHourly:
+		return c.GetHourlyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodDaily:
+		return c.GetDailyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodWeekly:
+		return c.GetWeeklyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodMonthly:
+		return c.GetMonthlyCheckInScheduleElem(jalId, cirKey, t)
+	case models.CheckInPeriodYearly:
+		return c.GetYearlyCheckInScheduleElem(jalId, cirKey, t)
+	}
+
+	return nil
 }
 
 // 因为map乱序，所以说还是用slice
