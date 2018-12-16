@@ -126,7 +126,10 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		return err
 	}
 
-	jalSchedule, err := json.Marshal(MakeJalSchedule(&jal))
+	schedules := MakeJalSchedule(&jal)
+	jal.StartDate, jal.LastStepDate = schedules.GetMinMax()
+
+	jalSchedule, err := json.Marshal(schedules)
 	if err != nil {
 		logs.Error("marshal schedule error:%v", err)
 		return err
@@ -194,5 +197,5 @@ func checkInPeriodToDuration(checkInPeriodType int8) (d time.Duration) {
 		d = time.Hour * 24 * 365
 	}
 
-	return 0
+	return d
 }

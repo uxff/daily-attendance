@@ -1,10 +1,9 @@
 package inits
 
 import (
-	"time"
-
-	_ "github.com/uxff/daily-attendance/models"
 	_ "github.com/uxff/daily-attendance/lib/modules/attendance/models"
+	_ "github.com/uxff/daily-attendance/models"
+	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"

@@ -466,3 +466,14 @@ func (c *CheckInSchedules) ToJson() string {
 	}
 	return string(scheduleJson)
 }
+
+// must use same format time, here use string
+func (c *CheckInSchedules) EstimateStep(minTimeStr string, tStr string, d time.Duration) int {
+	//d := checkInPeriodToDuration(jal.Aid.CheckInPeriod)
+	//minTimeStr, _ := c.GetMinMax()
+	minTime, _ := time.Parse("2006-01-02 15:04:05", minTimeStr) //time zone to utc, why?
+	t, _ := time.Parse("2006-01-02 15:04:05", tStr)
+	dSec := int(d / time.Second)
+	logs.Debug("t.Unix()=%d/%v minTime.unix=%d/%v dsec=%d", t.Unix(), t, minTime.Unix(), minTime, dSec)
+	return int(t.Unix()-minTime.Unix()) / dSec
+}

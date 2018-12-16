@@ -42,19 +42,23 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	cirKey, cir := cirm.IsInTimeSpan(now, jal.Aid.CheckInPeriod)
 
 	if cir == nil {
+		// todo: update this jal to missed
 		return fmt.Errorf("now is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
 	}
 
+	assumeStep := schedules.EstimateStep(minTime, nowStr, checkInPeriodToDuration(jal.Aid.CheckInPeriod))
+
+	// 本时间点的对应的key
 	checkInElem := cir.GetCheckInScheduleElem(jal.Aid.CheckInPeriod, jal.JalId, now, cirKey)
 	checkInKeyTypeWill := cirKey
 	checkInKeyWill := checkInElem.Key
 
-	//logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s elem=%+v", checkInKeyTypeWill, checkInKeyWill, scheduleElem)
+	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s assumeStep=:%d minTime=%s now=%s", checkInKeyTypeWill, checkInKeyWill, assumeStep, minTime, nowStr)
 
 	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("aid", act.Aid).Filter("check_in_key", checkInKeyWill).All(&todayCheckInLog)
 
 	if len(todayCheckInLog) > 0 {
-		return fmt.Errorf("the checkInKey(%s) is already checked for jal:%d", checkInKeyWill, jal.JalId)
+		return fmt.Errorf("the checkInKey(%s) has already checked for jal:%d", checkInKeyWill, jal.JalId)
 	}
 
 	switch jal.Status {
@@ -66,7 +70,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		stepIdx, scheduleElemIdx := schedules.IsTimeIn(now)
 		if stepIdx == -1 || scheduleElemIdx == -1 {
 			// 如果已经达标，则不再时间段内
-			return fmt.Errorf("now(%v) is not in jal(%d)s schedules(%v)", jal.JalId, jal.Schedule)
+			return fmt.Errorf("now is not in jal(%d)s schedules(%v), min:%s max:%s ", jal.JalId, jal.Schedule, minTime, maxTime)
 		}
 
 		if jal.Step == stepIdx {
@@ -76,6 +80,10 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 				jal.Status = models.JalStatusAchieved
 				// todo: notify to calc jal bonus next step
 			}
+			if jal.Step < assumeStep {
+				jal.Status = models.JalStatusMissed
+			}
+
 			// save jal, insert checkInLog
 
 			// insert db
@@ -92,9 +100,10 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			}
 
 			schedules[stepIdx][scheduleElemIdx].CilId = int(cilId)
+			jal.Schedule = schedules.ToJson()
 
 			// update db
-			_, err = ormObj.Update(jal, "schedule", "step", "status")
+			_, err = ormObj.Update(jal, "step", "schedule", "status")
 			//err = UpdateJalStep(jal, schedules, stepIdx, int(cilId))
 			if err != nil {
 				return fmt.Errorf("update jal step error:%v", err)
@@ -106,6 +115,9 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	case models.JalStatusAchieved:
 		// will get bonus
 		jal.Step++
+		if jal.Step < assumeStep {
+			jal.Status = models.JalStatusMissed
+		}
 
 		// insert db
 		_, err := ormObj.Insert(&models.CheckInLog{
@@ -120,7 +132,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return fmt.Errorf("insert checkin error:%v", err)
 		}
 
-		_, err = ormObj.Update(jal, "step")
+		_, err = ormObj.Update(jal, "step", "status")
 		//err = UpdateJalStep(jal, schedules, stepIdx, int(cilId))
 		if err != nil {
 			return fmt.Errorf("update jal step error:%v", err)
@@ -153,8 +165,8 @@ func MakeJalSchedule(jal *models.JoinActivityLog) CheckInSchedules {
 	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
 
 	cirm.IsValid(jal.Aid.CheckInPeriod)
-	//logs.Debug("after IsValid, cirm=%+v", cirm)
 	d := checkInPeriodToDuration(jal.Aid.CheckInPeriod)
+	//logs.Debug("after IsValid, cirm=%+v", cirm)
 
 	for i := 0; i < jal.BonusNeedStep; i++ {
 		stepElems := cirm.GetCheckInScheduleElems(jal.Aid.CheckInPeriod, jal.JalId, t)

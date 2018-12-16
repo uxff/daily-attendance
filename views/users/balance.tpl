@@ -26,7 +26,6 @@
                     <td>来源</td>
                     <td>交易后余额</td>
                     <td>时间</td>
-                    <td>状态</td>
                     <td>备注</td>
                 </tr>
                 </thead>
@@ -44,7 +43,6 @@
                     <td>{{.SourceType}}</td>
                     <td>{{.Balance}}</td>
                     <td>{{timefmtm .Created}}</td>
-                    <td>{{jalstatus .Status}}</td>
                     <td>{{.Remark}}</td>
                 </tr>
                 {{end}}

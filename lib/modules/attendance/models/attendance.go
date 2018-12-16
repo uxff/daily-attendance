@@ -91,16 +91,16 @@ type JoinActivityLog struct {
 	Uid              int       `orm:"type(int)"`
 	Created          time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated          time.Time `orm:"auto_now;type(datetime)"`
-	StartDate        string    `orm:"type(datetime)"` //mysql.Date?
 	BonusNeedStep    int       `orm:"type(int);default(0)"`
 	Step             int       `orm:"type(int);default(0)"`
-	LastStepDate     string    `orm:"time(datetime)"`           // needed?
 	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
 	RewardDispatched int8      `orm:"type(tinyint);default(0)"`
 	JoinUtlId        int       `orm:"type(int);default(0)"`
 	JoinPrice        int       `orm:"type(int);default(0)"`
 	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
 	BonusTotal       int       `orm:"type(int);default(0)"`
+	StartDate        string    `orm:"size(10)"`   //mysql.Date?
+	LastStepDate     string    `orm:"size(10)"`   // needed?
 	Schedule         string    `orm:"type(text)"` // json of
 	//Schedulemap      map[string]string `orm:"type(json);defualt('')"`
 	//IsMissed int // is wasted
