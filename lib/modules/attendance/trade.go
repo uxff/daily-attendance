@@ -45,8 +45,33 @@ func Pay() {
 
 }
 
-func Charge() {
+func Charge(Uid int, amount int, remark string) (int, error) {
 
+	utl := models.UserTradeLog{
+		Uid:          Uid,
+		Amount:       amount,
+		TradeType:    models.TradeTypeCheckInBonus,
+		SourceType:   1,
+		Balance:      0,
+		PayStatus:    models.PayStatusSuccess,
+		PlusMinus:    models.UserTradePlus,
+		Status:       models.StatusNormal,
+		RefundStatus: 0,
+		Remark:       remark,
+	}
+
+	ormObj := orm.NewOrm()
+
+	utlId, err := ormObj.Insert(&utl)
+	if err != nil {
+		return int(utlId), err
+	}
+
+	ub := GetUserBalance(Uid)
+	ub.Balance = ub.Balance + int64(amount)
+	ormObj.Update(ub, "balance")
+
+	return int(utlId), nil
 }
 
 func Consume(Uid int, p BuyableObject, num int) (int, error) {

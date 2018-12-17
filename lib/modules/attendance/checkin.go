@@ -37,12 +37,11 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		return fmt.Errorf("too ealier, jal schedule min:%s max:%s", minTime, maxTime)
 	}
 
-	// 当前时间是否在活动的时间规则内
+	// 当前时间是否在活动的时间规则内，非几天内
 	cirm := Json2CheckInRule(jal.Aid.CheckInRule)
 	cirKey, cir := cirm.IsInTimeSpan(now, jal.Aid.CheckInPeriod)
 
 	if cir == nil {
-		// todo: update this jal to missed
 		return fmt.Errorf("now is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
 	}
 
