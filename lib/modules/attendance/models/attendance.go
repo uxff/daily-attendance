@@ -88,19 +88,19 @@ type JoinActivityLog struct {
 	JalId int                 `orm:"pk;auto"`
 	Aid   *AttendanceActivity `orm:"rel(fk);default(0);null"`
 	//Aidd           int       `orm:"type(int)"`
-	Uid              int       `orm:"type(int)"`
-	Created          time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated          time.Time `orm:"auto_now;type(datetime)"`
-	BonusNeedStep    int       `orm:"type(int);default(0)"`
-	Step             int       `orm:"type(int);default(0)"`
-	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
-	JoinUtlId        int       `orm:"type(int);default(0)"`
-	JoinPrice        int       `orm:"type(int);default(0)"`
-	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
-	BonusTotal       int       `orm:"type(int);default(0)"`
-	StartDate        string    `orm:"size(10)"`   //mysql.Date?
-	LastStepDate     string    `orm:"size(10)"`   // needed?
-	Schedule         string    `orm:"type(text)"` // json of
+	Uid           int       `orm:"type(int)"`
+	Created       time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated       time.Time `orm:"auto_now;type(datetime)"`
+	BonusNeedStep int       `orm:"type(int);default(0)"`
+	Step          int       `orm:"type(int);default(0)"`
+	IsFinish      int8      `orm:"type(tinyint);default(0)"` // is finishing, w
+	JoinUtlId     int       `orm:"type(int);default(0)"`
+	JoinPrice     int       `orm:"type(int);default(0)"`
+	Status        int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
+	BonusTotal    int       `orm:"type(int);default(0)"`
+	StartDate     string    `orm:"size(10)"`   //mysql.Date?
+	LastStepDate  string    `orm:"size(10)"`   // needed?
+	Schedule      string    `orm:"type(text)"` // json of
 	//Schedulemap      map[string]string `orm:"type(json);defualt('')"`
 	//IsMissed int // is wasted
 
@@ -176,10 +176,11 @@ type UserTradeLog struct {
 type WastageShare struct {
 	WsId int `orm:"pk;auto"`
 	//UtlId int `orm:""`
-	JalId   int `orm:"type(int)"`
-	FromUid int `orm:"type(int)"`
-	ToUid   int `orm:"type(int)"`
-	Amount  int `orm:"type(int)"`
+	WastedJalId int `orm:"type(int)"`
+	ToJalId     int `orm:"type(int)"`
+	FromUid     int `orm:"type(int)"`
+	ToUid       int `orm:"type(int)"`
+	Amount      int `orm:"type(int)"`
 
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`

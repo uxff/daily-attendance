@@ -3,10 +3,13 @@ package attendance
 import (
 	"time"
 
+	"fmt"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
+
+var accountingPeriodSec = 60
 
 func ListUserBonusLog(Uid int) []*models.WastageShare {
 	list := []*models.WastageShare{}
@@ -35,6 +38,7 @@ func ShareMissedAttendance() {
 		missedJals := ListMissedJal(act.Aid)
 		successJals := ListAchievedJal(act.Aid)
 		for _, mjal := range missedJals {
+			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, actAmount)
 			ShareMissedJal(mjal, successJals, actAmount)
 		}
 	}
@@ -65,9 +69,26 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 	for _, sjal := range successJals {
 		// todo: log in wastage share
 		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
-		DispatchBonus(sjal.Uid, oneBonus, sjal)
+		LogShared(missedJal, sjal, oneBonus)
+		DispatchBonus(oneBonus, sjal)
 	}
 	return nil
+}
+
+func LogShared(missedJal *models.JoinActivityLog, toJal *models.JoinActivityLog, amount int) {
+	ws := models.WastageShare{
+		WastedJalId: missedJal.JalId,
+		ToJalId:     toJal.JalId,
+		FromUid:     missedJal.Uid,
+		ToUid:       toJal.Uid,
+		Amount:      amount,
+	}
+
+	ormObj := orm.NewOrm()
+	_, err := ormObj.Insert(&ws)
+	if err != nil {
+		logs.Error("insert wastage share error:%v", err)
+	}
 }
 
 func ListAchievedJal(Aid int) []*models.JoinActivityLog {
@@ -106,19 +127,19 @@ func GetAchivedAmounts(Aid int) int {
 
 }
 
-func DispatchBonus(Uid int, amount int, jal *models.JoinActivityLog) {
-	utlId, err := Charge(Uid, amount, jal.Aid.Name)
+func DispatchBonus(amount int, successorJal *models.JoinActivityLog) {
+	utlId, err := Charge(successorJal.Uid, amount, successorJal.Aid.Name)
 	if err != nil {
 		logs.Error("dispatch bonus error:%v", err)
 		return
 	}
 
-	jal.BonusTotal += amount
+	successorJal.BonusTotal += amount
 
 	ormObj := orm.NewOrm()
-	ormObj.Update(jal, "bonus_total")
+	ormObj.Update(successorJal, "bonus_total")
 
-	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", Uid, amount, jal.JalId, utlId)
+	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", successorJal.Uid, amount, successorJal.JalId, utlId)
 }
 
 func StopAllUnachiedJal() {
@@ -160,32 +181,37 @@ func AccoutingActivityJoined(Aid int) int {
 	}{}
 
 	qb.Select("sum(join_price) as join_price_all").From("join_activity_log").
-		Where("aid = ? and status in (?, ?)").Limit(1)
+		Where("aid = ? and status in ")
 
 	sql := qb.String()
 
 	logs.Debug("sql=%s", sql)
 
-	err = ormObj.Raw(sql, Aid, models.JalStatusInited, models.JalStatusAchieved).QueryRow(&allJoined)
+	err = ormObj.Raw(sql+fmt.Sprintf("(%d,%d)", models.JalStatusInited, models.JalStatusAchieved), Aid).QueryRow(&allJoined)
 	if err != nil {
 		logs.Debug("query error:%v", err)
 	}
 
-	err = ormObj.Raw(sql, Aid, models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared).QueryRow(&allMissed)
+	err = ormObj.Raw(sql+fmt.Sprintf("(%d,%d,%d)", models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared), Aid).QueryRow(&allMissed)
 	if err != nil {
 		logs.Debug("query error:%v", err)
 	}
 
-	return allJoined.JoinPriceAll-allMissed.JainPriceAll
+	return allJoined.JoinPriceAll - allMissed.JainPriceAll
 }
 
 func AutoAccounting() {
 	for {
-		time.Sleep(time.Minute)
-		ShareMissedAttendance()
+		time.Sleep(time.Second * time.Duration(accountingPeriodSec))
 		// stop unachieved jal
 		StopAllUnachiedJal()
+		// share the missed
+		ShareMissedAttendance()
 		// todo: accounting each activity all joined money
 
 	}
+}
+
+func SetAccountingPeriod(nSec int) {
+	accountingPeriodSec = nSec
 }
