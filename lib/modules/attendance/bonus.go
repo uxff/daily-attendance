@@ -31,10 +31,11 @@ func ShareMissedAttendance() {
 	// list all activity
 	activities := ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	for _, act := range activities {
+		actAmount := AccoutingActivityJoined(act.Aid)
 		missedJals := ListMissedJal(act.Aid)
 		successJals := ListAchievedJal(act.Aid)
 		for _, mjal := range missedJals {
-			ShareMissedJal(mjal, successJals)
+			ShareMissedJal(mjal, successJals, actAmount)
 		}
 	}
 }
@@ -49,12 +50,12 @@ func ListMissedJal(Aid int) []*models.JoinActivityLog {
 	return list
 }
 
-func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog) error {
+func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, actAmount int) error {
 	ormObj := orm.NewOrm()
 
 	moneyWillShare := missedJal.JoinPrice
 	// todo: 放在循环外
-	allJoinedAmounts := GetAchivedAmounts(missedJal.Aid.Aid)
+	allJoinedAmounts := actAmount //GetAchivedAmounts(missedJal.Aid.Aid)
 	//allAchievedFeederGoods := GetAllAchievedGolds()
 	missedJal.Status = models.JalStatusShared
 
@@ -63,7 +64,7 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 
 	for _, sjal := range successJals {
 		// todo: log in wastage share
-		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / allJoinedAmounts)
+		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
 		DispatchBonus(sjal.Uid, oneBonus, sjal)
 	}
 	return nil
@@ -120,9 +121,71 @@ func DispatchBonus(Uid int, amount int, jal *models.JoinActivityLog) {
 	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", Uid, amount, jal.JalId, utlId)
 }
 
+func StopAllUnachiedJal() {
+	ormObj := orm.NewOrm()
+	jals := make([]*models.JoinActivityLog, 0)
+
+	ormObj.QueryTable(models.JoinActivityLog{}).RelatedSel("aid").Filter("status__in", []interface{}{models.JalStatusInited, models.JalStatusAchieved}).All(&jals)
+
+	now := time.Now()
+
+	for _, jal := range jals {
+		schedules := Json2CheckInSchedules(jal.Schedule)
+		min, _ := schedules.GetMinMax()
+		stepIdx := schedules.EstimateStep(min, now.Format("2006-01-02 15:04:05"), checkInPeriodToDuration(jal.Aid.CheckInPeriod))
+		if (stepIdx - jal.Step) > 1 {
+			// no
+			logs.Debug("jal:%d db step:%d estimate step:%d will be missed", jal.JalId, jal.Step, stepIdx)
+			jal.Status = models.JalStatusMissed
+			ormObj.Update(jal, "status")
+		}
+	}
+}
+
+// all remain = inited+achieved - (missed+shared+stopped)
+func AccoutingActivityJoined(Aid int) int {
+
+	ormObj := orm.NewOrm()
+	qb, err := orm.NewQueryBuilder("mysql")
+	if err != nil {
+		return 0
+	}
+
+	allJoined := struct {
+		JoinPriceAll int
+	}{}
+
+	allMissed := struct {
+		JainPriceAll int
+	}{}
+
+	qb.Select("sum(join_price) as join_price_all").From("join_activity_log").
+		Where("aid = ? and status in (?, ?)").Limit(1)
+
+	sql := qb.String()
+
+	logs.Debug("sql=%s", sql)
+
+	err = ormObj.Raw(sql, Aid, models.JalStatusInited, models.JalStatusAchieved).QueryRow(&allJoined)
+	if err != nil {
+		logs.Debug("query error:%v", err)
+	}
+
+	err = ormObj.Raw(sql, Aid, models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared).QueryRow(&allMissed)
+	if err != nil {
+		logs.Debug("query error:%v", err)
+	}
+
+	return allJoined.JoinPriceAll-allMissed.JainPriceAll
+}
+
 func AutoAccounting() {
 	for {
 		time.Sleep(time.Minute)
 		ShareMissedAttendance()
+		// stop unachieved jal
+		StopAllUnachiedJal()
+		// todo: accounting each activity all joined money
+
 	}
 }

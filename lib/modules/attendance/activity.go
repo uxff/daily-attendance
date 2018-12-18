@@ -114,7 +114,6 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		Aid:              &act,
 		Uid:              Uid,
 		IsFinish:         0,
-		RewardDispatched: 0,
 		BonusNeedStep:    act.BonusNeedStep,
 		JoinUtlId:        UtlId,
 		Status:           models.StatusNormal,

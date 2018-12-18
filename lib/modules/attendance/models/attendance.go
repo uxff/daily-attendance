@@ -86,7 +86,7 @@ var JalStatusMap = map[int8]string{
 // user - 1:N - jal
 type JoinActivityLog struct {
 	JalId int                 `orm:"pk;auto"`
-	Aid   *AttendanceActivity `orm:"rel(one);default(0);null"`
+	Aid   *AttendanceActivity `orm:"rel(fk);default(0);null"`
 	//Aidd           int       `orm:"type(int)"`
 	Uid              int       `orm:"type(int)"`
 	Created          time.Time `orm:"auto_now_add;type(datetime)"`
@@ -94,7 +94,6 @@ type JoinActivityLog struct {
 	BonusNeedStep    int       `orm:"type(int);default(0)"`
 	Step             int       `orm:"type(int);default(0)"`
 	IsFinish         int8      `orm:"type(tinyint);default(0)"` // is finishing, w
-	RewardDispatched int8      `orm:"type(tinyint);default(0)"`
 	JoinUtlId        int       `orm:"type(int);default(0)"`
 	JoinPrice        int       `orm:"type(int);default(0)"`
 	Status           int8      `orm:"type(tinyint);default(1)"` // missed,expired,stopped,deleted,shared cannot restart
