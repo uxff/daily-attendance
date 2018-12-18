@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-lg-8 col-lg-offset-2">
             <div class="panel panel-info">
-                <div class="panel-heading">打卡 - {{.act.Name}}</div>
+                <div class="panel-heading">打卡 - {{.jal.Aid.Name}}</div>
                 <div class="panel-body">
                     <form role="form" action="" method="post">
                         <div class="form-group row">
@@ -16,7 +16,7 @@
                                 <label>活动名称</label>
                             </div>
                             <div class="col-md-4">
-                                <label>{{.act.Name}}</label>
+                                <label>{{.jal.Aid.Name}}</label>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -24,7 +24,7 @@
                                 活动参与价格
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-danger">{{.act.JoinPrice}} 积分</label>
+                                <label class="label label-danger">{{.jal.JoinPrice}} 积分</label>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -32,7 +32,7 @@
                                 连续多长时间可以分红
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-info">{{.act.BonusNeedStep}} 天</label>
+                                <label class="label label-info">{{.jal.BonusNeedStep}} 天</label>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -40,7 +40,7 @@
                                 我已打卡
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-success">{{.cilsTotal}} {{checkinperiod .act.CheckInPeriod}}</label>
+                                <label class="label label-success">{{.cilsTotal}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
                             </div>
                         </div>
                         <div class="form-group row text-center">

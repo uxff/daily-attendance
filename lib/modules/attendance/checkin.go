@@ -144,13 +144,16 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	return nil
 }
 
-func ListUserCheckInLog(Uid int, Aid int) []*models.CheckInLog {
+func ListUserCheckInLog(Uid int, JalId int, Aid int) []*models.CheckInLog {
 	list := []*models.CheckInLog{}
 
 	ormObj := orm.NewOrm()
 	filter := ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid)
+	if JalId > 0 {
+		filter = filter.Filter("jal_id", JalId)
+	}
 	if Aid > 0 {
-		filter.Filter("aid", Aid)
+		filter = filter.Filter("aid", Aid)
 	}
 	filter.All(&list)
 	return list

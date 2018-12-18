@@ -43,7 +43,7 @@
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
                     <td>
-                        <a href="/attendance/checkin?aid={{.Aid.Aid}}">打卡</a>
+                        <a href="/attendance/checkin?jalid={{.JalId}}">打卡</a>
                         <a href="/attendance/mycheckinlog?jalid={{.JalId}}">详情</a>
                     </td>
                 </tr>

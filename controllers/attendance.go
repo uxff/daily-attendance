@@ -184,38 +184,43 @@ func (c *AttendanceController) Checkin() {
 
 	c.TplName = "attendance/checkin.tpl"
 
-	aid, _ := c.GetInt("aid")
+	jalId, _ := c.GetInt("jalid")
 
 	flash := beego.NewFlash()
-	if aid == 0 {
+	if jalId == 0 {
 		flash.Warning("没有指定aid")
 		flash.Store(&c.Controller)
 		return
 	}
 
-	act := attendance.GetActivity(aid)
-	if act == nil {
-		flash.Warning("aid不存在")
+	jal := attendance.GetJoinActivityLog(jalId)
+	if jal == nil || jal.Uid != c.Userinfo.Uid {
+		flash.Warning("jal不存在")
 		flash.Store(&c.Controller)
 		return
 	}
 
 	// 查看已经参与的活动
-	jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieved, models.JalStatusInited})
+	//jals := attendance.ListUserActivityLog(c.Userinfo.Uid, aid, []interface{}{models.JalStatusAchieved, models.JalStatusInited})
 
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
-	c.Data["act"] = act
-	c.Data["jals"] = jals
+	c.Data["jal"] = jal
+	//c.Data["jals"] = jals
 
-	if len(jals) == 0 {
-		flash.Error("请参与活动%s后再来打卡", act.Name)
+	cils := attendance.ListUserCheckInLog(c.Userinfo.Uid, jal.JalId, 0)
+	c.Data["cils"] = cils
+	c.Data["cilsTotal"] = len(cils)
+
+	if jal.Status == models.JalStatusMissed || jal.Status == models.JalStatusShared {
+		flash.Error("活动方案[%s]参与后，未完成按计划打卡，请重新参与", jal.Aid.Name)
 		flash.Store(&c.Controller)
 		return
 	}
-
-	cils := attendance.ListUserCheckInLog(c.Userinfo.Uid, act.Aid)
-	c.Data["cils"] = cils
-	c.Data["cilsTotal"] = len(cils)
+	if jal.Status == models.JalStatusStopped {
+		flash.Error("活动方案[%s]参与后，已中断，请重新参与", jal.Aid.Name)
+		flash.Store(&c.Controller)
+		return
+	}
 
 	if !c.Ctx.Input.IsPost() {
 		return
@@ -227,14 +232,14 @@ func (c *AttendanceController) Checkin() {
 		return
 	}
 
-	err := attendance.UserCheckIn(c.Userinfo.Uid, jals[0])
+	err := attendance.UserCheckIn(c.Userinfo.Uid, jal)
 	if err != nil {
-		flash.Warning("打卡失败：%v", err)
+		flash.Warning("活动[%s]打卡失败：%v", jal.Aid.Name, err)
 		flash.Store(&c.Controller)
 		return
 	}
 
-	flash.Success("%s(%d)打卡成功", act.Name, aid)
+	flash.Success("活动[%s](%d)打卡成功", jal.Aid.Name, jal.Aid.Aid)
 	flash.Store(&c.Controller)
 }
 

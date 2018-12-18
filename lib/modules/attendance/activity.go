@@ -111,12 +111,12 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 
 	// add jal
 	jal := models.JoinActivityLog{
-		Aid:              &act,
-		Uid:              Uid,
-		IsFinish:         0,
-		BonusNeedStep:    act.BonusNeedStep,
-		JoinUtlId:        UtlId,
-		Status:           models.StatusNormal,
+		Aid:           &act,
+		Uid:           Uid,
+		IsFinish:      0,
+		BonusNeedStep: act.BonusNeedStep,
+		JoinUtlId:     UtlId,
+		Status:        models.StatusNormal,
 		//Schedulemap:      map[string]string{"a": "b"},
 	}
 	_, err = ormObj.Insert(&jal)
@@ -168,7 +168,7 @@ func ListUserActivityLog(Uid int, Aid int, status []interface{}) []*models.JoinA
 func GetJoinActivityLog(JalId int) *models.JoinActivityLog {
 	jal := models.JoinActivityLog{JalId: JalId}
 	ormObj := orm.NewOrm()
-	err := ormObj.Read(&jal)
+	err := ormObj.QueryTable(jal).Filter("jal_id", JalId).RelatedSel("aid").One(&jal)
 
 	if err != nil {
 		logs.Error("cannot find jalId(%d) in db: %v", JalId, err)
