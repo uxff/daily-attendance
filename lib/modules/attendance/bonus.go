@@ -197,6 +197,8 @@ func AccoutingActivityJoined(Aid int) int {
 		logs.Debug("query error:%v", err)
 	}
 
+	logs.Debug("Aid:%d allJoined:%d allMissed:%d remain:%d", Aid, allJoined.JoinPriceAll, allMissed.JainPriceAll, allJoined.JoinPriceAll-allMissed.JainPriceAll)
+
 	return allJoined.JoinPriceAll - allMissed.JainPriceAll
 }
 
