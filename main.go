@@ -27,6 +27,8 @@ func main() {
 	models.SetFriendlyLinksPath("./conf/friends.json")
 	models.LoadFriendlyLinks()
 
+	aperiod, _ := beego.AppConfig.Int("accounting_period")
+	attendance.SetAccountingPeriod(aperiod)
 	go attendance.AutoAccounting()
 
 	logs.Info("beego server will run. addr=%s", addr)

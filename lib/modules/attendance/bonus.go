@@ -177,7 +177,7 @@ func AccoutingActivityJoined(Aid int) int {
 	}{}
 
 	allMissed := struct {
-		JainPriceAll int
+		JoinPriceAll int
 	}{}
 
 	qb.Select("sum(join_price) as join_price_all").From("join_activity_log").
@@ -197,9 +197,10 @@ func AccoutingActivityJoined(Aid int) int {
 		logs.Debug("query error:%v", err)
 	}
 
-	logs.Debug("Aid:%d allJoined:%d allMissed:%d remain:%d", Aid, allJoined.JoinPriceAll, allMissed.JainPriceAll, allJoined.JoinPriceAll-allMissed.JainPriceAll)
+	//joined[0]["join_price_all"]
+	logs.Debug("--------Aid:%d allJoined:%v allMissed:%v remain:%d", Aid, allJoined, allMissed, allJoined.JoinPriceAll-allMissed.JoinPriceAll)
 
-	return allJoined.JoinPriceAll - allMissed.JainPriceAll
+	return allJoined.JoinPriceAll - allMissed.JoinPriceAll
 }
 
 func AutoAccounting() {
