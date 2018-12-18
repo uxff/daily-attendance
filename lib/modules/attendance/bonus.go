@@ -35,6 +35,12 @@ func ShareMissedAttendance() {
 	activities := ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	for _, act := range activities {
 		actAmount := AccoutingActivityJoined(act.Aid)
+
+		if actAmount <= 0 {
+			logs.Warn("no more actvity amount of Aid:%d, ignore", act.Aid)
+			continue
+		}
+
 		missedJals := ListMissedJal(act.Aid)
 		successJals := ListAchievedJal(act.Aid)
 		for _, mjal := range missedJals {
@@ -200,7 +206,7 @@ func AccoutingActivityJoined(Aid int) int {
 	//joined[0]["join_price_all"]
 	logs.Debug("--------Aid:%d allJoined:%v allMissed:%v remain:%d", Aid, allJoined, allMissed, allJoined.JoinPriceAll-allMissed.JoinPriceAll)
 
-	return allJoined.JoinPriceAll - allMissed.JoinPriceAll
+	return allJoined.JoinPriceAll // - allMissed.JoinPriceAll
 }
 
 func AutoAccounting() {
