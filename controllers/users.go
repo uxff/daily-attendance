@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/uxff/daily-attendance/lib"
 	"github.com/uxff/daily-attendance/lib/modules/attendance"
+	models2 "github.com/uxff/daily-attendance/lib/modules/attendance/models"
 	"github.com/uxff/daily-attendance/models"
 )
 
@@ -133,6 +134,13 @@ func (c *UsersController) Signup() {
 	flash.Store(&c.Controller)
 
 	c.SetLogin(u)
+
+	go func() {
+		awardAmount, _ := beego.AppConfig.Int("register_award")
+		if awardAmount > 0 {
+			attendance.Award(u.Uid, awardAmount, models2.TradeTypeRegisterAward, "")
+		}
+	}()
 
 	c.Redirect(c.URLFor("UsersController.Index"), 303)
 }

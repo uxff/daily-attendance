@@ -60,6 +60,13 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		return fmt.Errorf("the checkInKey(%s) has already checked for jal:%d", checkInKeyWill, jal.JalId)
 	}
 
+	checkOk := false
+	defer func() {
+		if checkOk && jal.Aid.AwardPerCheckIn > 0 {
+			go Award(jal.Uid, jal.Aid.AwardPerCheckIn, models.TradeTypeCheckInAward, "签到奖励"+jal.Aid.Name)
+		}
+	}()
+
 	switch jal.Status {
 	case models.JalStatusInited:
 		// is going to achieved

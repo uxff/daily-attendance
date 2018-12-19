@@ -133,6 +133,7 @@ const (
 	TradeTypeCheckInAward  = 2
 	TradeTypeRevertConsume = 3
 	TradeTypeCheckInBonus  = 4
+	TradeTypeRegisterAward = 5
 	TradeTypeConsume       = 21
 	TradeTypeWastage       = 22
 	TradeTypeRevertCharge  = 23

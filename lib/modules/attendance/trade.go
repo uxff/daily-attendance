@@ -45,12 +45,16 @@ func Pay() {
 
 }
 
-func Charge(Uid int, amount int, remark string) (int, error) {
+func Charge() {
+
+}
+
+func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 
 	utl := models.UserTradeLog{
 		Uid:          Uid,
 		Amount:       amount,
-		TradeType:    models.TradeTypeCheckInBonus,
+		TradeType:    tradeType,
 		SourceType:   1,
 		Balance:      0,
 		PayStatus:    models.PayStatusSuccess,

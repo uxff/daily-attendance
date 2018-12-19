@@ -60,12 +60,14 @@ func ListMissedJal(Aid int) []*models.JoinActivityLog {
 	return list
 }
 
-func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, actAmount int) error {
+func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, allJoinedAmounts int) error {
 	ormObj := orm.NewOrm()
 
 	moneyWillShare := missedJal.JoinPrice
-	// todo: 放在循环外
-	allJoinedAmounts := actAmount //GetAchivedAmounts(missedJal.Aid.Aid)
+	if missedJal.JoinPrice <= 0 {
+		logs.Warn("missedJal.JoinPrice is empty, no need to share")
+		return nil
+	}
 	//allAchievedFeederGoods := GetAllAchievedGolds()
 	missedJal.Status = models.JalStatusShared
 
@@ -73,7 +75,6 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 	ormObj.Update(missedJal, "status")
 
 	for _, sjal := range successJals {
-		// todo: log in wastage share
 		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
 		LogShared(missedJal, sjal, oneBonus)
 		DispatchBonus(oneBonus, sjal)
@@ -134,7 +135,7 @@ func GetAchivedAmounts(Aid int) int {
 }
 
 func DispatchBonus(amount int, successorJal *models.JoinActivityLog) {
-	utlId, err := Charge(successorJal.Uid, amount, successorJal.Aid.Name)
+	utlId, err := Award(successorJal.Uid, amount, models.TradeTypeCheckInBonus, successorJal.Aid.Name)
 	if err != nil {
 		logs.Error("dispatch bonus error:%v", err)
 		return
