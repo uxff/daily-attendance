@@ -40,7 +40,7 @@
                             <div class="col-md-6 col-md-offset-2">
                                 {{.xsrfdata}}
                                 {{range $k, $jal := .jals}}
-                                    <p>您已经于{{timefmtm $jal.Created}}参与了该活动。</p>
+                                    <p>您已经于{{timefmtm $jal.Created}}参与了该活动。<a href="/attendance/checkin?jalid={{.JalId}}">打卡</a></p>
                                 {{end}}
                                 您确定要参加该活动吗？
                                 <button type="submit" class="btn btn-primary">确认参与</button>

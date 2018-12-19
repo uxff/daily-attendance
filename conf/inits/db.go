@@ -1,16 +1,16 @@
 package inits
 
 import (
-	_ "github.com/uxff/daily-attendance/lib/modules/attendance/models"
-	_ "github.com/uxff/daily-attendance/models"
 	"time"
-
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/orm"
 
 	_ "github.com/go-sql-driver/mysql"
 	//_ "github.com/lib/pq"
 	//_ "github.com/mattn/go-sqlite3"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
+	_ "github.com/uxff/daily-attendance/lib/modules/attendance/models"
+	_ "github.com/uxff/daily-attendance/models"
 )
 
 func init() {

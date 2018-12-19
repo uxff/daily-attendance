@@ -109,7 +109,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			}
 
 		}
-		logs.Debug("jal.Step=%d stepIdx=%d ", jal.Step, stepIdx)
+		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d ", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx)
 
 	case models.JalStatusAchieved:
 		// will get bonus
@@ -136,6 +136,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		if err != nil {
 			return fmt.Errorf("update jal step error:%v", err)
 		}
+		logs.Debug("jal:%d jal.Step=%d/%d ", jal.JalId, jal.Step, jal.BonusNeedStep)
 
 	case models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared:
 		return fmt.Errorf("jal(%d) is in unmormal stauts:%v", jal.JalId, models.JalStatusMap[jal.Status])
