@@ -119,7 +119,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return nil
 		}
 		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d ", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx)
-		return fmt.Errorf("jal(%d)s in schedules but missed step:%d expect:%d", jal.JalId, stepIdx, jal.Step+1)
+		return fmt.Errorf("jal(%d)s in schedules but step illegel:%d expect(or missed):%d", jal.JalId, stepIdx, jal.Step)
 
 	case models.JalStatusAchieved:
 		// will get bonus
