@@ -51,6 +51,7 @@ func Charge() {
 
 func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 
+	logs.Info("WILL AWARD: uid:%d amount:%d tradeType:%d", Uid, amount, tradeType)
 	utl := models.UserTradeLog{
 		Uid:          Uid,
 		Amount:       amount,
@@ -68,12 +69,17 @@ func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 
 	utlId, err := ormObj.Insert(&utl)
 	if err != nil {
+		logs.Error("when award error:%v uid:%d tradeType:%d amount:%d", err, Uid, amount, tradeType)
 		return int(utlId), err
 	}
 
 	ub := GetUserBalance(Uid)
 	ub.Balance = ub.Balance + int64(amount)
-	ormObj.Update(ub, "balance")
+	_, err = ormObj.Update(ub, "balance")
+	if err != nil {
+		logs.Error("when award error:%v uid:%d tradeType:%d amount:%d", err, Uid, amount, tradeType)
+		//return int(utlId), err
+	}
 
 	return int(utlId), nil
 }

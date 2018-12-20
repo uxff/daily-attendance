@@ -12,6 +12,11 @@
             <li><a href="/user/invite">推广码</a></li>
         </ul>
         <h4>我的参与的打卡计划</h4>
+        <div class="btn-group" role="group" aria-label="...">
+            <button type="button" class="btn btn-default da-btn-all">全部</button>
+            <button type="button" class="btn btn-default da-btn-ok">坚持中</button>
+            <button type="button" class="btn btn-default da-btn-fail">错过</button>
+        </div>
         <div class="col-lg-2"></div>
         <div class="col-lg-8">
             <table class="table table-bordered table-striped">
@@ -19,7 +24,7 @@
                 <tr>
                     <td>参与时间</td>
                     <td>活动名称</td>
-                    <td>打卡要求</td>
+                    <td>活动描述</td>
                     <td>花费积分</td>
                     <td>完成度</td>
                     <td>状态</td>
@@ -34,12 +39,12 @@
                 </tr>
             {{else}}
                 {{range $ji, $jal := .jals}}
-                <tr>
+                <tr class="da-tr {{inarr .Status "1,2" "da-tr-ok" ""}} {{inarr .Status "3,4,5" "da-tr-fail" ""}}">
                     <td>{{timefmtm .Created}}</td>
                     <td>{{.Aid.Name}}</td>
-                    <td>{{.Aid.CheckInRule}}/{{.Aid.BonusNeedStep}}{{checkinperiod .Aid.CheckInPeriod}}</td>
+                    <td>{{.Aid.Desc}}</td>
                     <td>{{.JoinPrice}}</td>
-                    <td>{{.Step}}/{{.BonusNeedStep}}</td>
+                    <td>{{.Step}}/{{.BonusNeedStep}}{{checkinperiod .Aid.CheckInPeriod}}</td>
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
                     <td>

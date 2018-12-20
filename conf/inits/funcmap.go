@@ -1,6 +1,7 @@
 package inits
 
 import (
+	"fmt"
 	"html/template"
 	"net/url"
 	"reflect"
@@ -64,13 +65,6 @@ func init() {
 		return runewidth.Truncate(in, length, "...")
 	})
 
-	beego.AddFuncMap("mod", func(big int, lit int, zeroEcho, nonZeroEcho string) string {
-		if lit > 0 && big % lit == 0 {
-			return zeroEcho
-		}
-		return nonZeroEcho
-	})
-
 	beego.AddFuncMap("noname", func(in string) string {
 		if in == "" {
 			return "(未入力)"
@@ -101,4 +95,31 @@ func init() {
 		}
 		return template.JS("")
 	})
+
+	beego.AddFuncMap("mod", func(big int, lit int, zeroEcho, nonZeroEcho string) string {
+		if lit > 0 && big%lit == 0 {
+			return zeroEcho
+		}
+		return nonZeroEcho
+	})
+
+	beego.AddFuncMap("tri", func(b bool, trueEcho, falseEcho string) string {
+		if b {
+			return trueEcho
+		}
+		return falseEcho
+	})
+
+	// needle=23 see=12,45,23,67 return trueEcho
+	beego.AddFuncMap("inarr", func(needle interface{}, see string, trueEcho, falseEcho string) string {
+		needleStr := fmt.Sprintf("%v", needle)
+		sees := strings.Split(see, ",")
+		for _, s := range sees {
+			if s == needleStr {
+				return trueEcho
+			}
+		}
+		return falseEcho
+	})
+
 }

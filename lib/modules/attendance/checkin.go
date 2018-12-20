@@ -63,7 +63,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	checkOk := false
 	defer func() {
 		if checkOk && jal.Aid.AwardPerCheckIn > 0 {
-			go Award(jal.Uid, jal.Aid.AwardPerCheckIn, models.TradeTypeCheckInAward, "签到奖励"+jal.Aid.Name)
+			go Award(jal.Uid, jal.Aid.AwardPerCheckIn, models.TradeTypeCheckInAward, "签到奖励:"+jal.Aid.Name)
 		}
 	}()
 
@@ -76,7 +76,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		stepIdx, scheduleElemIdx := schedules.IsTimeIn(now)
 		if stepIdx == -1 || scheduleElemIdx == -1 {
 			// 如果已经达标，则不再时间段内
-			return fmt.Errorf("now is not in jal(%d)s schedules(%v), min:%s max:%s ", jal.JalId, jal.Schedule, minTime, maxTime)
+			return fmt.Errorf("now is NOT in jal(%d)s schedules(%v), min:%s max:%s ", jal.JalId, jal.Schedule, minTime, maxTime)
 		}
 
 		if jal.Step == stepIdx {
@@ -115,8 +115,11 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 				return fmt.Errorf("update jal step error:%v", err)
 			}
 
+			checkOk = true
+			return nil
 		}
 		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d ", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx)
+		return fmt.Errorf("jal(%d)s in schedules but missed step:%d expect:%d", jal.JalId, stepIdx, jal.Step+1)
 
 	case models.JalStatusAchieved:
 		// will get bonus
@@ -143,6 +146,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		if err != nil {
 			return fmt.Errorf("update jal step error:%v", err)
 		}
+		checkOk = true
 		logs.Debug("jal:%d jal.Step=%d/%d ", jal.JalId, jal.Step, jal.BonusNeedStep)
 
 	case models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared:

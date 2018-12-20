@@ -58,6 +58,7 @@ type AttendanceActivity struct {
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
 	JoinedUserCount     int     `orm:"type(int);default(0)"`
 	JoinedGoldsCount    int     `orm:"type(int);default(0)"`
+	Desc                string  `orm:"size(255)"`
 
 	// use Wasting Rule?
 	//BonusRule string // use Bonus Rule?
