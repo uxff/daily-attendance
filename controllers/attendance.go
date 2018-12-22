@@ -121,6 +121,7 @@ func (c *AttendanceController) Join() {
 
 	flash.Success("参与活动%s(%d)成功", act.Name, aid)
 	flash.Store(&c.Controller)
+	c.Redirect(c.Ctx.Request.RequestURI, 303)
 }
 
 func (c *AttendanceController) Add() {
@@ -174,6 +175,7 @@ func (c *AttendanceController) Add() {
 	}
 	flash.Warning("创建活动成功 ")
 	flash.Store(&c.Controller)
+	c.Redirect(c.Ctx.Request.RequestURI, 303)
 }
 
 func (c *AttendanceController) Checkin() {
@@ -241,6 +243,7 @@ func (c *AttendanceController) Checkin() {
 
 	flash.Success("活动[%s](%d)打卡成功", jal.Aid.Name, jal.Aid.Aid)
 	flash.Store(&c.Controller)
+	c.Redirect(c.Ctx.Request.RequestURI, 303)
 }
 
 func (c *AttendanceController) MyCheckInLog() {

@@ -11,15 +11,25 @@ func GetUserBalance(Uid int) *models.UserBalance {
 
 	ub := models.UserBalance{Uid: Uid}
 
-	n, err := ormObj.QueryTable(models.UserBalance{}).Filter("uid", Uid).Count()
+	filter := ormObj.QueryTable(&models.UserBalance{}).Filter("uid", Uid)
+	n, err := filter.Count()
 	if err != nil {
-		logs.Error("query user(%d) balance error:%v", Uid, err)
-		return nil
+		logs.Error("query user(%d) balance error:%v n:%d", Uid, err, n)
+		//return nil
 	}
+
+	if n > 0 {
+	}
+
 	if n <= 0 {
-		ormObj.Insert(&ub)
+		_, err = ormObj.Insert(&ub)
 	} else {
-		ormObj.Read(&ub)
+		err = filter.One(&ub)
+		//err = ormObj.Read(&ub)// must use pk
+	}
+
+	if err != nil {
+		logs.Warn("load user(%d) balance error:%v n:%d", Uid, err, n)
 	}
 
 	return &ub
