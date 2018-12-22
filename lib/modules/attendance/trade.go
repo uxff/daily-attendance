@@ -52,12 +52,13 @@ func Charge() {
 func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 
 	logs.Info("WILL AWARD: uid:%d amount:%d tradeType:%d", Uid, amount, tradeType)
+	ub := GetUserBalance(Uid)
 	utl := models.UserTradeLog{
 		Uid:          Uid,
 		Amount:       amount,
 		TradeType:    tradeType,
 		SourceType:   1,
-		Balance:      0,
+		Balance:      ub.Balance + int64(amount),
 		PayStatus:    models.PayStatusSuccess,
 		PlusMinus:    models.UserTradePlus,
 		Status:       models.StatusNormal,
@@ -73,7 +74,6 @@ func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 		return int(utlId), err
 	}
 
-	ub := GetUserBalance(Uid)
 	ub.Balance = ub.Balance + int64(amount)
 	_, err = ormObj.Update(ub, "balance")
 	if err != nil {
@@ -84,19 +84,21 @@ func Award(Uid int, amount int, tradeType int8, remark string) (int, error) {
 	return int(utlId), nil
 }
 
-func Consume(Uid int, p BuyableObject, num int) (int, error) {
+// means buy
+func Consume(Uid int, p BuyableObject, num int, remark string) (int, error) {
 	price := p.GetPrice()
+	ub := GetUserBalance(Uid)
 	utl := models.UserTradeLog{
 		Uid:          Uid,
 		Amount:       p.GetPrice(),
 		TradeType:    models.TradeTypeConsume,
 		SourceType:   1,
-		Balance:      0,
+		Balance:      ub.Balance - int64(price),
 		PayStatus:    models.PayStatusSuccess,
 		PlusMinus:    models.UserTradeMinus,
 		Status:       models.StatusNormal,
 		RefundStatus: 0,
-		Remark:       p.GetName(),
+		Remark:       remark,
 	}
 
 	if p.GetStoredNum() < num {
@@ -106,8 +108,6 @@ func Consume(Uid int, p BuyableObject, num int) (int, error) {
 
 	ormObj := orm.NewOrm()
 
-	//ub := models.UserBalance{}
-	ub := GetUserBalance(Uid)
 	if ub.Balance < int64(price) {
 		logs.Error("no enough balance of uid:%d, need %d, remain %d", Uid, price, ub.Balance)
 		return 0, fmt.Errorf("no enough balance of uid:%d, need %d, remain %d", Uid, price, ub.Balance)

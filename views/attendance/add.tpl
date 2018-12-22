@@ -18,7 +18,7 @@
                             <label for="name">名称</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="请输入名称">
+                            <input type="text" class="form-control" id="name" name="activity_name" placeholder="请输入名称">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -74,10 +74,10 @@
                             <label for="joinPrice">参与需要的押金</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" style="width: 80px;display: inline" name="joinPrice" placeholder="请输入积分" value="50">积分
+                            <input type="text" class="form-control" style="width: 80px;display: inline" name="joinPrice" placeholder="请输入积分" value="50"> 积分
                         </div>
                     </div>
-                    <div class="form-group row">
+                    <div class="form-group row hide">
                         <div class="col-md-4">
                             <label for="wastagePercent">放弃坚持后，押金扣除比例</label>
                         </div>

@@ -140,6 +140,17 @@ const (
 	TradeTypeRevertCharge  = 23
 )
 
+var TradeTypeMap = map[int8]string{
+	TradeTypeCharge:        "充值",
+	TradeTypeCheckInAward:  "打卡奖励",
+	TradeTypeRevertConsume: "撤销消费",
+	TradeTypeCheckInBonus:  "打卡分红",
+	TradeTypeRegisterAward: "注册奖励",
+	TradeTypeConsume:       "消费",
+	TradeTypeWastage:       "被瓜分押金",
+	TradeTypeRevertCharge:  "撤销充值",
+}
+
 const (
 	PayStatusNone    = 1
 	PayStatusSuccess = 2
@@ -159,7 +170,7 @@ type UserTradeLog struct {
 	TradeType     int8      `orm:"type(tinyint)"`
 	PlusMinus     int8      `orm:"type(tinyint)"` // -1 or +1
 	SourceType    int8      `orm:"type(tinyint);default(0)"`
-	Balance       int       `orm:"type(int);default(0)"`
+	Balance       int64     `orm:"type(int);default(0)"`
 	PayStatus     int8      `orm:"type(tinyint);default(0)"`
 	RefundStatus  int8      `orm:"type(tinyint);default(0)"`
 	Created       time.Time `orm:"auto_now_add;type(datetime)"`

@@ -38,8 +38,8 @@
                 {{range $utli, $utl := .utls}}
                 <tr>
                     <td>{{.UtlId}}</td>
-                    <td>{{.Amount}}</td>
-                    <td>{{.TradeType}}</td>
+                    <td>{{if gt .PlusMinus 0}}+{{end}}{{if lt .PlusMinus 0}}-{{end}}{{.Amount}}</td>
+                    <td>{{tradetype .TradeType}}</td>
                     <td>{{.SourceType}}</td>
                     <td>{{.Balance}}</td>
                     <td>{{timefmtm .Created}}</td>

@@ -18,6 +18,9 @@ func init() {
 	beego.AddFuncMap("checkinperiod", func(v int8) string {
 		return models.CheckInPeriodMap[v]
 	})
+	beego.AddFuncMap("tradetype", func(v int8) string {
+		return models.TradeTypeMap[v]
+	})
 }
 
 type AttendanceController struct {
@@ -103,7 +106,7 @@ func (c *AttendanceController) Join() {
 	var err error
 	if act.JoinPrice > 0 {
 		actProduct := attendance.ActivityToProduct(act)
-		utlId, err = attendance.Consume(c.Userinfo.Uid, actProduct, 1)
+		utlId, err = attendance.Consume(c.Userinfo.Uid, actProduct, 1, "参与活动:"+actProduct.GetName())
 		if err != nil {
 			flash.Warning("参与失败：%v", err)
 			flash.Store(&c.Controller)
@@ -122,6 +125,7 @@ func (c *AttendanceController) Join() {
 	flash.Success("参与活动%s(%d)成功", act.Name, aid)
 	flash.Store(&c.Controller)
 	c.Redirect(c.Ctx.Request.RequestURI, 303)
+	//c.Redirect(c.URLFor("AttendanceController.Join", "aid", act.Aid), 303)
 }
 
 func (c *AttendanceController) Add() {
@@ -146,7 +150,7 @@ func (c *AttendanceController) Add() {
 		return
 	}
 
-	name := c.GetString("name")
+	name := c.GetString("activity_name")
 	startTimeStr := c.GetString("startTime")
 	endTimeStr := c.GetString("endTime")
 	needStep, _ := c.GetInt("needStep")
@@ -167,7 +171,7 @@ func (c *AttendanceController) Add() {
 	}
 	logs.Warn("will create activity:%v %v %v %v %v %v", name, startTime, endTime, needStep, checkInRuleMap, wastagePercent)
 
-	err = attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, float32(wastagePercent))
+	act, err := attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, float32(wastagePercent))
 	if err != nil {
 		flash.Warning("创建活动失败 " + err.Error())
 		flash.Store(&c.Controller)
@@ -175,7 +179,7 @@ func (c *AttendanceController) Add() {
 	}
 	flash.Warning("创建活动成功 ")
 	flash.Store(&c.Controller)
-	c.Redirect(c.Ctx.Request.RequestURI, 303)
+	c.Redirect(c.URLFor("AttendanceController.Join", "aid", act.Aid), 303)
 }
 
 func (c *AttendanceController) Checkin() {

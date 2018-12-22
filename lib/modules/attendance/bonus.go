@@ -123,7 +123,7 @@ func GetAchivedAmounts(Aid int) int {
 
 	sql := qb.String()
 
-	logs.Debug("sql=%s", sql)
+	//logs.Debug("sql=%s", sql)
 
 	err = ormObj.Raw(sql, Aid).QueryRow(&all)
 	if err != nil {
@@ -192,7 +192,7 @@ func AccoutingActivityJoined(Aid int) int {
 
 	sql := qb.String()
 
-	logs.Debug("sql=%s", sql)
+	//logs.Debug("sql=%s", sql)
 
 	err = ormObj.Raw(sql+fmt.Sprintf("(%d,%d)", models.JalStatusInited, models.JalStatusAchieved), Aid).QueryRow(&allJoined)
 	if err != nil {

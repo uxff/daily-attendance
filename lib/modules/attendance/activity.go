@@ -38,27 +38,27 @@ func GetActivity(Aid int) *models.AttendanceActivity {
 }
 
 func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInRuleMap, needStep int, checkInPeriod int8,
-	creatorUid int, joinPrice int, loserWastagePercent float32) error {
+	creatorUid int, joinPrice int, loserWastagePercent float32) (*models.AttendanceActivity, error) {
 
 	if name == "" {
-		return errors.New("name cannot be null")
+		return nil, errors.New("name cannot be null")
 	}
 
 	if endTime.Unix() <= startTime.Unix() {
-		return errors.New("endTime should not smaller than startTime")
+		return nil, errors.New("endTime should not smaller than startTime")
 	}
 
 	if needStep <= 0 {
-		return errors.New("needStep is illegal")
+		return nil, errors.New("needStep is illegal")
 	}
 
 	if !checkInRule.IsValid(checkInPeriod) {
-		return fmt.Errorf("checkInRule invalid:%v", checkInRule)
+		return nil, fmt.Errorf("checkInRule invalid:%v", checkInRule)
 	}
 
 	checkInRuleJson, err := json.Marshal(&checkInRule)
 	if err != nil {
-		return fmt.Errorf("when json.marshal checkInRule:%v", err)
+		return nil, fmt.Errorf("when json.marshal checkInRule:%v", err)
 	}
 
 	act := models.AttendanceActivity{
@@ -78,10 +78,10 @@ func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInR
 	_, err = ormObj.Insert(&act)
 	if err != nil {
 		logs.Error("inset jal error:%v", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &act, nil
 }
 
 func StopActivity(Aid int) {
