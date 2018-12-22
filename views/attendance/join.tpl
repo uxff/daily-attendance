@@ -25,7 +25,15 @@
                                 活动参与价格
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-danger">{{.act.JoinPrice}} 积分</label>
+                                <label class="label label-warning">{{.act.JoinPrice}} 积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                打卡要求
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-info">连续 {{.act.BonusNeedStep}} {{checkinperiod .act.CheckInPeriod}}</label>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -33,7 +41,7 @@
                                 连续多长时间可以分红
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-warning">{{.act.BonusNeedStep}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
+                                <label class="label label-info">{{.act.BonusNeedStep}} {{checkinperiod .act.CheckInPeriod}}</label>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -41,7 +49,39 @@
                                 每次打卡奖励
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-warning">{{.act.AwardPerCheckIn}} 积分</label>
+                                <label class="label label-success">{{.act.AwardPerCheckIn}} 积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                已参与数量
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-info">{{.act.JoinedUserCount}}人 / {{.act.JoinedAmount}}积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                气馁数量
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-info">{{.act.MissedUserCount}}人 / {{.act.AllMissedAmount}}积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                累计瓜分
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-success">{{.act.SharedAmount}}积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                待瓜分
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-success">{{.act.UnsharedAmount}} 积分</label>
                             </div>
                         </div>
                         <div class="form-group row text-center">

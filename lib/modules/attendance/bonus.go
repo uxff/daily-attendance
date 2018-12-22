@@ -35,13 +35,23 @@ func ListUserWastageLog(Uid int) []*models.WastageShare {
 // share all missed
 func ShareMissedAttendance() {
 	// list all activity
+	ormObj := orm.NewOrm()
 	activities := ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	for _, act := range activities {
-		actAmount := AccoutingActivityJoined(act.Aid)
+		allJoinedAmount := AccoutingActivityByStatus(act.Aid, nil)
 
-		if actAmount <= 0 {
+		if act.JoinedAmount <= 0 {
 			logs.Warn("no more joined amount of Aid:%d, ignore", act.Aid)
 			continue
+		}
+
+		if allJoinedAmount != act.JoinedAmount {
+			act.JoinedAmount = allJoinedAmount
+			_, err := ormObj.Update(act, "joined_amount")
+			if err != nil {
+				logs.Error("update act(%d).joined_amount error:%v", act.Aid, err)
+			}
+
 		}
 
 		missedJals := ListMissedJal(act.Aid)
@@ -58,9 +68,19 @@ func ShareMissedAttendance() {
 		}
 
 		for _, mjal := range missedJals {
-			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, actAmount)
-			ShareMissedJal(mjal, successJals, actAmount, act)
+			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, act.JoinedAmount)
+			ShareMissedJal(mjal, successJals, act.JoinedAmount, act)
 		}
+
+		act.UnsharedAmount = AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusMissed, models.JalStatusStopped})
+		act.SharedAmount = AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusShared})
+		act.AllMissedAmount = act.UnsharedAmount + act.SharedAmount
+		act.MissedUserCount = len(missedJals)
+		_, err := ormObj.Update(act, "shared_amount", "unshared_amount", "all_missed_amount", "missed_user_count")
+		if err != nil {
+			logs.Error("update act(%d).shared_amount error:%v", act.Aid, err)
+		}
+
 	}
 }
 
@@ -86,7 +106,6 @@ func ListMissedJal(Aid int) []*models.JoinActivityLog {
 func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, allJoinedAmounts int, act *models.AttendanceActivity) error {
 	ormObj := orm.NewOrm()
 
-	moneyWillShare := missedJal.JoinPrice
 	if missedJal.JoinPrice <= 0 {
 		logs.Warn("missedJal.JoinPrice is empty, no need to share")
 		return nil
@@ -94,14 +113,14 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 	//allAchievedFeederGoods := GetAllAchievedGolds()
 	missedJal.Status = models.JalStatusShared
 
-	// todo: 么有分享的时候，无需更新missed
 	ormObj.Update(missedJal, "status")
 
 	for _, sjal := range successJals {
-		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
+		oneBonus := missedJal.JoinPrice * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
 		SharedToOne(missedJal, sjal, oneBonus, act)
 		//DispatchBonus(oneBonus, sjal)
 	}
+
 	return nil
 }
 
@@ -134,15 +153,10 @@ func SharedToOne(missedJal *models.JoinActivityLog, toJal *models.JoinActivityLo
 	_, err = ormObj.Update(toJal, "bonus_total")
 	if err != nil {
 		logs.Error("update successor jal(%d).bonus_total error:%v", toJal.JalId, err)
+		return
 	}
 
-	act.MissedUserCount += 1
-	_, err = ormObj.Update(act, "missed_user_count")
-	if err != nil {
-		logs.Error("update act(%d).missed_user_count error:%v", act.Aid, err)
-	}
-
-	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", toJal.Uid, amount, toJal.JalId, utlId)
+	logs.Info("dispatch bonus ok, uid:%d bonus:%d jalId:%d joined:%d allAmount:%d utlId:%d", toJal.Uid, amount, toJal.JalId, toJal.JoinPrice, act.JoinedAmount, utlId)
 }
 
 func StopAllUnachiedJal() {
@@ -166,44 +180,44 @@ func StopAllUnachiedJal() {
 	}
 }
 
-// all remain = inited+achieved - (missed+shared+stopped)
-func AccoutingActivityJoined(Aid int) int {
+// all joined: status(all)
+// all unshared: status(missed,stopped)
+// all shared: status(shared)
+func AccoutingActivityByStatus(Aid int, status []int8) (sum int) {
 
 	ormObj := orm.NewOrm()
 	qb, err := orm.NewQueryBuilder("mysql")
 	if err != nil {
-		return 0
+		logs.Error("orm.NewQueryBuilder error:%v", err)
+		return
 	}
 
-	allJoined := struct {
-		JoinPriceAll int
+	theSum := struct {
+		TheSum int
+		//TheCount int
 	}{}
 
-	allMissed := struct {
-		JoinPriceAll int
-	}{}
+	sql := qb.Select("sum(join_price) as thesum").From("join_activity_log").
+		Where("aid = ? ").String()
 
-	qb.Select("sum(join_price) as join_price_all").From("join_activity_log").
-		Where("aid = ? and status in ")
-
-	sql := qb.String()
-
-	//logs.Debug("sql=%s", sql)
-
-	err = ormObj.Raw(sql+fmt.Sprintf("(%d,%d)", models.JalStatusInited, models.JalStatusAchieved), Aid).QueryRow(&allJoined)
-	if err != nil {
-		logs.Debug("query error:%v", err)
+	sts := ""
+	for _, s := range status {
+		sts += fmt.Sprintf(",%d", s)
 	}
 
-	err = ormObj.Raw(sql+fmt.Sprintf("(%d,%d,%d)", models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared), Aid).QueryRow(&allMissed)
-	if err != nil {
-		logs.Debug("query error:%v", err)
+	if len(sts) > 1 {
+		sts = sts[1:]
+		sql = sql + " and status in (" + sts + ")"
 	}
 
-	//joined[0]["join_price_all"]
-	logs.Debug("--------Aid:%d allJoined:%v allMissed:%v remain:%d", Aid, allJoined, allMissed, allJoined.JoinPriceAll-allMissed.JoinPriceAll)
+	err = ormObj.Raw(sql, Aid).QueryRow(&theSum)
+	if err != nil {
+		logs.Warn("query(%s) error:%v", sql, err)
+	}
 
-	return allJoined.JoinPriceAll // - allMissed.JoinPriceAll
+	//logs.Debug("--------Aid:%d allJoined:%v missed:%v shared:%v", Aid, allJoined.JoinPriceAll, allMissed.JoinPriceAll, allShared.JoinPriceAll)
+
+	return theSum.TheSum //, theSum.TheCount
 }
 
 func AutoAccounting() {

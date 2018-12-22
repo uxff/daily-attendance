@@ -56,10 +56,15 @@ type AttendanceActivity struct {
 	JoinPrice  int       `orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
-	JoinedUserCount     int     `orm:"type(int);default(0)"`
-	JoinedAmount        int     `orm:"type(int);default(0)"`
-	MissedUserCount     int     `orm:"type(int);default(0)"`
-	Desc                string  `orm:"size(255)"`
+
+	JoinedUserCount int `orm:"type(int);default(0)"` //累计
+	JoinedAmount    int `orm:"type(int);default(0)"` //累计 status(all) JoinedAmount>MissedAmount
+	MissedUserCount int `orm:"type(int);default(0)"` //累计
+	AllMissedAmount int `orm:"type(int);default(0)"` //累计 status(missed,stopped,shared)
+	SharedAmount    int `orm:"type(int);default(0)"` //累计 status(shared)
+	UnsharedAmount  int `orm:"type(int);default(0)"` //实时值 status(missed,stopped) MissedAmount=UnsharedAmount+SharedAmount
+
+	Desc string `orm:"size(255)"`
 
 	// use Wasting Rule?
 	//BonusRule string // use Bonus Rule?
