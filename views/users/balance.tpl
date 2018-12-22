@@ -11,7 +11,7 @@
             <li><a href="/user/bonus">收益</a></li>
             <li><a href="/user/invite">推广码</a></li>
         </ul>
-        <h4>我的账户余额</h4>
+        <h4>我的账户明细</h4>
         <div class="col-lg-2">
             <p>当前余额</p>
             <label class="label label-success">{{.balance.Balance}} 积分</label>

@@ -48,7 +48,15 @@
                                 我已打卡
                             </div>
                             <div class="col-md-4">
-                                <label class="label label-success">{{.cilsTotal}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
+                                <label class="label label-info">{{.cilsTotal}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                状态
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-success">{{jalstatus .jal.Status}}</label>
                             </div>
                         </div>
                         <div class="form-group row text-center">

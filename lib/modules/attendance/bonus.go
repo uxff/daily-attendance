@@ -40,7 +40,7 @@ func ShareMissedAttendance() {
 	for _, act := range activities {
 		allJoinedAmount := AccoutingActivityByStatus(act.Aid, nil)
 
-		if act.JoinedAmount <= 0 {
+		if allJoinedAmount <= 0 {
 			logs.Warn("no more joined amount of Aid:%d, ignore", act.Aid)
 			continue
 		}
@@ -193,12 +193,12 @@ func AccoutingActivityByStatus(Aid int, status []int8) (sum int) {
 	}
 
 	theSum := struct {
-		TheSum int
+		Thesum int
 		//TheCount int
 	}{}
 
 	sql := qb.Select("sum(join_price) as thesum").From("join_activity_log").
-		Where("aid = ? ").String()
+		Where("aid_id = ? ").String()
 
 	sts := ""
 	for _, s := range status {
@@ -215,9 +215,9 @@ func AccoutingActivityByStatus(Aid int, status []int8) (sum int) {
 		logs.Warn("query(%s) error:%v", sql, err)
 	}
 
-	//logs.Debug("--------Aid:%d allJoined:%v missed:%v shared:%v", Aid, allJoined.JoinPriceAll, allMissed.JoinPriceAll, allShared.JoinPriceAll)
+	logs.Debug("--------Aid:%d sum:%d sts:%s", Aid, theSum.Thesum, sts)
 
-	return theSum.TheSum //, theSum.TheCount
+	return theSum.Thesum //, theSum.TheCount
 }
 
 func AutoAccounting() {
