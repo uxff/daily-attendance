@@ -12,44 +12,45 @@
             <li><a href="/user/invite">推广码</a></li>
         </ul>
         <h4>我的收益</h4>
-        <div class="col-lg-3"></div>
-        <div class="col-lg-6">
+        <div class="col-lg-2">
+            <p>累计收益</p>
+            <label class="label label-success">{{.balance.Balance}} 积分</label>
+        </div>
+        <div class="col-lg-8">
             <table class="table table-bordered table-striped">
+                <thead>
                 <tr>
-                    <td>账号：</td>
-                    <td>  {{.Userinfo.Email}} </td>
+                    <td>交易号</td>
+                    <td>金额(积分)</td>
+                    <td>活动名</td>
+                    <td>时间</td>
+                    <td>操作</td>
                 </tr>
+                </thead>
+                <tbody>
+                {{if eq 0 .total }}
                 <tr>
-                    <td>昵称：</td>
-                    <td> {{.Userinfo.Nickname}} </td>
-
+                    <td colspan="12">没有记录</td>
                 </tr>
+                {{else}}
+                {{range $k, $ws := .bonusLog}}
                 <tr>
-                    <td>手机号：</td>
-                    <td>  {{.Userinfo.Phone}}</td>
+                    <td>{{.WsId}}</td>
+                    <td>{{.Amount}}</td>
+                    <td>{{.Aid.Name}}</td>
+                    <td>{{timefmtm .Created}}</td>
+                    <td>
+                        <a href="/attendance/join?aid={{.Aid.Aid}}" >参与活动</a>
+                        <a href="/attendance/checkin?jalid={{.ToJalId}}" >继续打卡</a>
+                        <a href="/trade/detail?utlid={{.UtlId}}" >交易详情</a>
+                    </td>
                 </tr>
-                <tr>
-                    <td>注册时间：</td>
-                    <td>  {{.Userinfo.Created}}</td>
-                </tr>
-                <tr>
-                    <td>激活认证：</td>
-                    <td>  微信,Email,手机号</td>
-                </tr>
-                <tr>
-                    <td>最后登录时间：</td>
-                    <td>  {{.Userinfo.Lastlogintime}}</td>
-                </tr>
-                <tr>
-                    <td>最后登录IP：</td>
-                    <td>  {{.Userinfo.Lastloginip}}</td>
-                </tr>
-                <tr>
-                    <td>头像：</td>
-                    <td> -</td>
-                </tr>
+                {{end}}
+                {{end}}
+                </tbody>
             </table>
         </div>
-        <div class="col-lg-3"></div>
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8 col-lg-offset-2 text-left">共{{.total}}条</div>
     </div>
 </div>

@@ -15,7 +15,10 @@ func ListUserBonusLog(Uid int) []*models.WastageShare {
 	list := []*models.WastageShare{}
 
 	ormObj := orm.NewOrm()
-	ormObj.QueryTable(models.WastageShare{}).Filter("to_uid", Uid).All(&list)
+	_, err := ormObj.QueryTable(models.WastageShare{}).Filter("to_uid", Uid).RelatedSel("aid").All(&list)
+	if err != nil {
+		logs.Warn("query WastageShare(toUid:%d) error: %v", Uid, err)
+	}
 
 	return list
 }
@@ -37,17 +40,37 @@ func ShareMissedAttendance() {
 		actAmount := AccoutingActivityJoined(act.Aid)
 
 		if actAmount <= 0 {
-			logs.Warn("no more actvity amount of Aid:%d, ignore", act.Aid)
+			logs.Warn("no more joined amount of Aid:%d, ignore", act.Aid)
 			continue
 		}
 
 		missedJals := ListMissedJal(act.Aid)
 		successJals := ListAchievedJal(act.Aid)
+
+		if len(successJals) == 0 {
+			logs.Warn("no more success jals of aid:%d, ignore", act.Aid)
+			continue
+		}
+
+		if len(missedJals) == 0 {
+			logs.Warn("no more missed jals of aid:%d, ignore", act.Aid)
+			continue
+		}
+
 		for _, mjal := range missedJals {
 			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, actAmount)
-			ShareMissedJal(mjal, successJals, actAmount)
+			ShareMissedJal(mjal, successJals, actAmount, act)
 		}
 	}
+}
+
+func ListAchievedJal(Aid int) []*models.JoinActivityLog {
+	list := []*models.JoinActivityLog{}
+
+	ormObj := orm.NewOrm()
+	ormObj.QueryTable(models.JoinActivityLog{}).Filter("aid_id", Aid).Filter("status", models.JalStatusAchieved).All(&list)
+
+	return list
 }
 
 //
@@ -60,7 +83,7 @@ func ListMissedJal(Aid int) []*models.JoinActivityLog {
 	return list
 }
 
-func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, allJoinedAmounts int) error {
+func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.JoinActivityLog, allJoinedAmounts int, act *models.AttendanceActivity) error {
 	ormObj := orm.NewOrm()
 
 	moneyWillShare := missedJal.JoinPrice
@@ -76,77 +99,50 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 
 	for _, sjal := range successJals {
 		oneBonus := moneyWillShare * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
-		LogShared(missedJal, sjal, oneBonus)
-		DispatchBonus(oneBonus, sjal)
+		SharedToOne(missedJal, sjal, oneBonus, act)
+		//DispatchBonus(oneBonus, sjal)
 	}
 	return nil
 }
 
-func LogShared(missedJal *models.JoinActivityLog, toJal *models.JoinActivityLog, amount int) {
+func SharedToOne(missedJal *models.JoinActivityLog, toJal *models.JoinActivityLog, amount int, act *models.AttendanceActivity) {
+	utlId, err := Award(toJal.Uid, amount, models.TradeTypeCheckInBonus, act.Name)
+	if err != nil {
+		logs.Error("dispatch bonus to jal(%d) error:%v", toJal.JalId, err)
+		return
+	}
+
 	ws := models.WastageShare{
 		WastedJalId: missedJal.JalId,
 		ToJalId:     toJal.JalId,
 		FromUid:     missedJal.Uid,
 		ToUid:       toJal.Uid,
 		Amount:      amount,
+		Aid:         act,
+		UtlId:       utlId,
 	}
 
 	ormObj := orm.NewOrm()
-	_, err := ormObj.Insert(&ws)
+	_, err = ormObj.Insert(&ws)
 	if err != nil {
 		logs.Error("insert wastage share error:%v", err)
-	}
-}
-
-func ListAchievedJal(Aid int) []*models.JoinActivityLog {
-	list := []*models.JoinActivityLog{}
-
-	ormObj := orm.NewOrm()
-	ormObj.QueryTable(models.JoinActivityLog{}).Filter("aid_id", Aid).Filter("status", models.JalStatusAchieved).All(&list)
-
-	return list
-}
-
-func GetAchivedAmounts(Aid int) int {
-	ormObj := orm.NewOrm()
-	qb, err := orm.NewQueryBuilder("mysql")
-	if err != nil {
-		return 0
-	}
-
-	all := struct {
-		JoinPriceAll int
-	}{}
-
-	qb.Select("sum(join_price) as join_price_all").From("join_activity_log").
-		Where("aid = ?").Limit(1)
-
-	sql := qb.String()
-
-	//logs.Debug("sql=%s", sql)
-
-	err = ormObj.Raw(sql, Aid).QueryRow(&all)
-	if err != nil {
-		logs.Debug("query error:%v", err)
-	}
-
-	return all.JoinPriceAll
-
-}
-
-func DispatchBonus(amount int, successorJal *models.JoinActivityLog) {
-	utlId, err := Award(successorJal.Uid, amount, models.TradeTypeCheckInBonus, successorJal.Aid.Name)
-	if err != nil {
-		logs.Error("dispatch bonus error:%v", err)
 		return
 	}
 
-	successorJal.BonusTotal += amount
+	toJal.BonusTotal += amount
 
-	ormObj := orm.NewOrm()
-	ormObj.Update(successorJal, "bonus_total")
+	_, err = ormObj.Update(toJal, "bonus_total")
+	if err != nil {
+		logs.Error("update successor jal(%d).bonus_total error:%v", toJal.JalId, err)
+	}
 
-	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", successorJal.Uid, amount, successorJal.JalId, utlId)
+	act.MissedUserCount += 1
+	_, err = ormObj.Update(act, "missed_user_count")
+	if err != nil {
+		logs.Error("update act(%d).missed_user_count error:%v", act.Aid, err)
+	}
+
+	logs.Info("dispatch bonus ok, uid:%d amount:%d jalId:%d utlId:%d", toJal.Uid, amount, toJal.JalId, utlId)
 }
 
 func StopAllUnachiedJal() {

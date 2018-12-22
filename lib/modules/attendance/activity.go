@@ -38,7 +38,7 @@ func GetActivity(Aid int) *models.AttendanceActivity {
 }
 
 func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInRuleMap, needStep int, checkInPeriod int8,
-	creatorUid int, joinPrice int, loserWastagePercent float32) (*models.AttendanceActivity, error) {
+	creatorUid int, joinPrice int, awardPerCheckin int) (*models.AttendanceActivity, error) {
 
 	if name == "" {
 		return nil, errors.New("name cannot be null")
@@ -62,16 +62,16 @@ func AddActivity(name string, startTime, endTime time.Time, checkInRule CheckInR
 	}
 
 	act := models.AttendanceActivity{
-		Name:                name,
-		ValidTimeStart:      startTime.Format("2006-01-02 15:04:05"),
-		ValidTimeEnd:        endTime.Format("2006-01-02 15:04:05"),
-		CheckInRule:         string(checkInRuleJson),
-		CheckInPeriod:       checkInPeriod,
-		BonusNeedStep:       needStep,
-		JoinPrice:           joinPrice,
-		CreatorUid:          creatorUid,
-		LoserWastagePercent: loserWastagePercent,
-		Status:              models.StatusNormal,
+		Name:            name,
+		ValidTimeStart:  startTime.Format("2006-01-02 15:04:05"),
+		ValidTimeEnd:    endTime.Format("2006-01-02 15:04:05"),
+		CheckInRule:     string(checkInRuleJson),
+		CheckInPeriod:   checkInPeriod,
+		BonusNeedStep:   needStep,
+		JoinPrice:       joinPrice,
+		CreatorUid:      creatorUid,
+		AwardPerCheckIn: awardPerCheckin,
+		Status:          models.StatusNormal,
 	}
 
 	var ormObj = orm.NewOrm()
@@ -117,11 +117,12 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 		BonusNeedStep: act.BonusNeedStep,
 		JoinUtlId:     UtlId,
 		Status:        models.StatusNormal,
+		JoinPrice:     act.JoinPrice,
 		//Schedulemap:      map[string]string{"a": "b"},
 	}
 	_, err = ormObj.Insert(&jal)
 	if err != nil {
-		logs.Error("inset jal error:%v", err)
+		logs.Error("insert jal error:%v", err)
 		return err
 	}
 
@@ -137,10 +138,17 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	jal.Schedule = string(jalSchedule)
 	_, err = ormObj.Update(&jal, "schedule")
 	if err != nil {
-		logs.Error("update jal schedule error:%v", err)
+		logs.Error("update jal(%d).schedule schedule error:%v", jal.JalId, err)
 		return err
 	}
 
+	act.JoinedAmount += act.JoinPrice
+	act.JoinedUserCount = act.JoinedUserCount + 1
+
+	_, err = ormObj.Update(&act, "join_price", "joined_user_count")
+	if err != nil {
+		logs.Warn("update act(%d).join_price,joined_user_count error:%v", act.Aid, err)
+	}
 	//
 
 	return nil

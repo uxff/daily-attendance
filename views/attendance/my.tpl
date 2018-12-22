@@ -44,7 +44,7 @@
                     <td>{{.Aid.Name}}</td>
                     <td>{{.Aid.Desc}}</td>
                     <td>{{.JoinPrice}}</td>
-                    <td>{{.Step}}/{{.BonusNeedStep}}{{checkinperiod .Aid.CheckInPeriod}}</td>
+                    <td>{{.Step}}/{{.BonusNeedStep}} {{checkinperiod .Aid.CheckInPeriod}}</td>
                     <td>{{jalstatus .Status}}</td>
                     <td>0</td>
                     <td>

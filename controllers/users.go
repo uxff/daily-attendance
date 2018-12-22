@@ -169,6 +169,7 @@ func (c *UsersController) Bonus() {
 
 	bonusLog := attendance.ListUserBonusLog(c.Userinfo.Uid)
 	c.Data["bonusLog"] = bonusLog
+	c.Data["total"] = len(bonusLog)
 
 	c.TplName = "users/bonus.tpl"
 }
@@ -181,6 +182,7 @@ func (c *UsersController) Wastage() {
 
 	bonusLog := attendance.ListUserWastageLog(c.Userinfo.Uid)
 	c.Data["bonusLog"] = bonusLog
+	c.Data["total"] = len(bonusLog)
 
 	c.TplName = "users/bonus.tpl"
 }

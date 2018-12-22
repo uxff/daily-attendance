@@ -14,7 +14,7 @@
         <h4>我的账户余额</h4>
         <div class="col-lg-2">
             <p>当前余额</p>
-            <label class="label label-success">{{.balance.Balance}}积分</label>
+            <label class="label label-success">{{.balance.Balance}} 积分</label>
         </div>
         <div class="col-lg-8">
             <table class="table table-bordered table-striped">
@@ -51,8 +51,6 @@
             </table>
         </div>
         <div class="col-lg-2"></div>
-    </div>
-    <div class="row">
         <div class="col-lg-2 col-lg-offset-2">
             共{{.total}}条
         </div>

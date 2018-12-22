@@ -33,7 +33,7 @@
                 {{end}}
                 {{end}}
                 <tr>
-                    <td colspan="12">{{.jal.Step}}/{{.jal.BonusNeedStep}}</td>
+                    <td colspan="12">{{.jal.Step}}/{{.jal.BonusNeedStep}} {{checkinperiod .jal.Aid.CheckInPeriod}}</td>
                 </tr>
                 </tbody>
             </table>

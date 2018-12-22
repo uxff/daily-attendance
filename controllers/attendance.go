@@ -156,7 +156,7 @@ func (c *AttendanceController) Add() {
 	needStep, _ := c.GetInt("needStep")
 	checkInRuleStr := c.GetString("checkInRule")
 	joinPrice, _ := c.GetInt("joinPrice")
-	wastagePercent, _ := c.GetFloat("wastagePercent")
+	awardPerCheckin, _ := c.GetInt("awardPerCheckin")
 	checkInPeriod, _ := c.GetInt8("checkInPeriod")
 
 	startTime, err := time.Parse("2006-01-02 15:04", startTimeStr)
@@ -169,9 +169,9 @@ func (c *AttendanceController) Add() {
 		flash.Store(&c.Controller)
 		return
 	}
-	logs.Warn("will create activity:%v %v %v %v %v %v", name, startTime, endTime, needStep, checkInRuleMap, wastagePercent)
+	logs.Warn("will create activity:%v %v %v %v %v %v", name, startTime, endTime, needStep, checkInRuleMap, awardPerCheckin)
 
-	act, err := attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, float32(wastagePercent))
+	act, err := attendance.AddActivity(name, startTime, endTime, *checkInRuleMap, needStep, checkInPeriod, c.Userinfo.Uid, joinPrice, awardPerCheckin)
 	if err != nil {
 		flash.Warning("创建活动失败 " + err.Error())
 		flash.Store(&c.Controller)

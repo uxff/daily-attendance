@@ -77,12 +77,12 @@
                             <input type="text" class="form-control" style="width: 80px;display: inline" name="joinPrice" placeholder="请输入积分" value="50"> 积分
                         </div>
                     </div>
-                    <div class="form-group row hide">
+                    <div class="form-group row">
                         <div class="col-md-4">
-                            <label for="wastagePercent">放弃坚持后，押金扣除比例</label>
+                            <label for="awardPerCheckin">每次打卡奖励</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" style="width: 80px;display: inline" name="wastagePercent" placeholder="请输入比例" value="50">%
+                            <input type="text" class="form-control" style="width: 80px;display: inline" name="awardPerCheckin" placeholder="请输入积分" value="10"> 积分
                         </div>
                     </div>
                     {{.xsrfdata}}

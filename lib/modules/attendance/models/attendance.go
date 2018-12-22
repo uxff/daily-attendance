@@ -57,7 +57,8 @@ type AttendanceActivity struct {
 	// loser lost all, or percent of his all
 	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
 	JoinedUserCount     int     `orm:"type(int);default(0)"`
-	JoinedGoldsCount    int     `orm:"type(int);default(0)"`
+	JoinedAmount        int     `orm:"type(int);default(0)"`
+	MissedUserCount     int     `orm:"type(int);default(0)"`
 	Desc                string  `orm:"size(255)"`
 
 	// use Wasting Rule?
@@ -187,13 +188,15 @@ type UserTradeLog struct {
 // user - N:N - wsid
 // UtlId - 1:N - wsid
 type WastageShare struct {
-	WsId int `orm:"pk;auto"`
-	//UtlId int `orm:""`
+	WsId        int `orm:"pk;auto"`
 	WastedJalId int `orm:"type(int)"`
 	ToJalId     int `orm:"type(int)"`
 	FromUid     int `orm:"type(int)"`
 	ToUid       int `orm:"type(int)"`
+	UtlId       int `orm:"type(int)"`
 	Amount      int `orm:"type(int)"`
+
+	Aid *AttendanceActivity `orm:"rel(fk);default(0);null"`
 
 	Created time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated time.Time `orm:"auto_now;type(datetime)"`
