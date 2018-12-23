@@ -36,15 +36,15 @@ type AttendanceActivity struct {
 	Aid  int    `orm:"pk;auto"`
 	Name string `orm:"size(32);unique"`
 
-	ValidTimeStart string `orm:"type(datetime)"`
-	ValidTimeEnd   string `orm:"type(datetime)"`
+	ValidTimeStart string `orm:"size(10)"`
+	ValidTimeEnd   string `orm:"size(10)"`
 
 	// unique(uid+checkInKey+checkInPeriod)
 	// rule for daily work:[{"WORKUP":{"timespan":["00:00","10:00"]}},{"WORKOFF":{"timespan":["18:00","23:59"]}}]
 	// rule for daily health:[{"HEALTH":{"timespan":["06:00","09:00"]}}]
 	// rule for monthly report:[{"REPORTM":{"dayspan":["01","02"]}}]
 	// rule for daily checkin:{"CHECKIND":{"timespan":["00:00","23:59"]}}
-	CheckInRule     string `orm:"size(4095)"`           // json, rule for checkin
+	CheckInRule     string `orm:"size(255)"`            // json, rule for checkin
 	CheckInPeriod   int8   `orm:"type(tinyint)"`        // Daily Hourly Monthly
 	BonusNeedStep   int    `orm:"type(int);default(0)"` // step count by CheckInPeriod
 	AwardPerCheckIn int    `orm:"type(int);default(0)"` // get bonus per check in
@@ -55,7 +55,7 @@ type AttendanceActivity struct {
 	Status     int8      `orm:"type(tinyint);default(1)"`
 	JoinPrice  int       `orm:"type(int);default(0)"`
 	// loser lost all, or percent of his all
-	LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
+	//LoserWastagePercent float32 `orm:"digits(12);decimals(4)"`
 
 	JoinedUserCount int `orm:"type(int);default(0)"` //累计
 	JoinedAmount    int `orm:"type(int);default(0)"` //累计 status(all) JoinedAmount>MissedAmount

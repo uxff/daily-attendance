@@ -32,7 +32,7 @@ $ vim conf/app.conf
 # How to Run
 
 ```
-$ ./daily-attendance --dir /data/your/exist/site/dir --addr :6699
+$ ./daily-attendance
 ```
 
 # Preview
@@ -46,6 +46,7 @@ $ ./daily-attendance --dir /data/your/exist/site/dir --addr :6699
 - email verify
 - payment
 - crontab
+- wx oa api
 
 
 

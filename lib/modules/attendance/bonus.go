@@ -38,15 +38,20 @@ func ShareMissedAttendance() {
 	ormObj := orm.NewOrm()
 	activities := ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	for _, act := range activities {
-		allJoinedAmount := AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusMissed})
-
-		if allJoinedAmount <= 0 {
+		if act.JoinedAmount <= 0 {
 			logs.Warn("no more joined amount of Aid:%d, ignore", act.Aid)
 			continue
 		}
 
-		if allJoinedAmount != act.JoinedAmount {
-			act.JoinedAmount = allJoinedAmount
+		unsharedAmount := AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusMissed})
+
+		if unsharedAmount <= 0 {
+			logs.Warn("no more missed amount of Aid:%d, ignore", act.Aid)
+			continue
+		}
+
+		if unsharedAmount != act.UnsharedAmount {
+			act.UnsharedAmount = unsharedAmount
 			_, err := ormObj.Update(act, "joined_amount")
 			if err != nil {
 				logs.Error("update act(%d).joined_amount error:%v", act.Aid, err)
@@ -67,14 +72,14 @@ func ShareMissedAttendance() {
 		}
 
 		for _, mjal := range missedJals {
-			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, act.JoinedAmount)
-			ShareMissedJal(mjal, successJals, act.JoinedAmount, act)
+			logs.Debug("%d successors will share amount %d from missed jal %d, act amount:%d", len(successJals), mjal.JoinPrice, mjal.JalId, act.UnsharedAmount)
+			ShareMissedJal(mjal, successJals, act.UnsharedAmount, act)
 		}
 
 		act.UnsharedAmount = AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusMissed, models.JalStatusStopped})
 		act.SharedAmount = AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusShared})
 		act.AllMissedAmount = act.UnsharedAmount + act.SharedAmount
-		act.MissedUserCount = len(missedJals)
+		act.MissedUserCount += len(missedJals)
 		_, err := ormObj.Update(act, "shared_amount", "unshared_amount", "all_missed_amount", "missed_user_count")
 		if err != nil {
 			logs.Error("update act(%d).shared_amount error:%v", act.Aid, err)

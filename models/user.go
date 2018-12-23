@@ -12,31 +12,30 @@ const (
 	RoleAdmin = 1
 	//RoleManager = 2
 
-	FlagSuperPaid = 0x800
-	FlagPaid = 8
-	FlagRealnamed = 4
+	FlagSuperPaid      = 0x800
+	FlagPaid           = 8
+	FlagRealnamed      = 4
 	FlagWechatVerified = 4
-	FlagPhoneVerified = 2
-	FlagEmailVerified = 1
+	FlagPhoneVerified  = 2
+	FlagEmailVerified  = 1
 )
 
 type User struct {
-	Uid            int		`orm:"pk;auto"`
-	Email         string    `orm:"size(64);unique" form:"Email" valid:"Required;Email"`
-	Password      string    `orm:"size(32)" form:"Password" valid:"Required;MinSize(6)"`
-	Repassword    string    `orm:"-" form:"Repassword" valid:"Required"`
-	Lastlogintime time.Time `orm:"type(datetime)" form:"-"`
-	Created       time.Time `orm:"auto_now_add;type(datetime)"`
-	Updated       time.Time `orm:"auto_now;type(datetime)"`
+	Uid            int       `orm:"pk;auto"`
+	Email          string    `orm:"size(64);unique" form:"Email" valid:"Required;Email"`
+	Password       string    `orm:"size(32)" form:"Password" valid:"Required;MinSize(6)"`
+	Repassword     string    `orm:"-" form:"Repassword" valid:"Required"`
+	Lastlogintime  time.Time `orm:"type(datetime)" form:"-"`
+	Created        time.Time `orm:"auto_now_add;type(datetime)"`
+	Updated        time.Time `orm:"auto_now;type(datetime)"`
 	EmailActivated time.Time `orm:"type(datetime)"`
-	Lastloginip string `orm:"size(16)"`
-	Phone string `orm:"size(16)"`
+	Lastloginip    string    `orm:"size(16);default('')"`
+	Phone          string    `orm:"size(16);default('')"`
 	PhoneActivated time.Time `orm:"type(datetime)"`
-	Nickname string `orm:"size(20)"`
-	Role 		int `orm:"-"`
+	Nickname       string    `orm:"size(20);default('')"`
+	Role           int       `orm:"-"`
 	//SocialFlag 	int
 }
-
 
 //func (u *User) Id() int64 {
 //	return  u.Uid
@@ -85,7 +84,6 @@ func (t *User) TableEngine() string {
 	return "INNODB"
 }
 
-
 func Users() orm.QuerySeter {
 	var table User
 	return orm.NewOrm().QueryTable(table).OrderBy("-Uid")
@@ -94,7 +92,6 @@ func Users() orm.QuerySeter {
 func (m *User) IsAdmin() bool {
 	return m.Role == RoleAdmin
 }
-
 
 func init() {
 	orm.RegisterModelWithPrefix(
