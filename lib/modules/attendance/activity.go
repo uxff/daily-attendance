@@ -145,7 +145,7 @@ func UserJoinActivity(Aid, Uid, UtlId int) error {
 	act.JoinedAmount += act.JoinPrice
 	act.JoinedUserCount = act.JoinedUserCount + 1
 
-	_, err = ormObj.Update(&act, "join_price", "joined_user_count")
+	_, err = ormObj.Update(&act, "joined_amount", "joined_user_count")
 	if err != nil {
 		logs.Warn("update act(%d).join_price,joined_user_count error:%v", act.Aid, err)
 	}

@@ -29,18 +29,18 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-md-4 col-md-offset-2">
-                                连续多长时间可以分红
-                            </div>
-                            <div class="col-md-4">
-                                <label class="label label-info">{{.jal.BonusNeedStep}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-md-4 col-md-offset-2">
                                 每次打卡奖励
                             </div>
                             <div class="col-md-4">
                                 <label class="label label-warning">{{.jal.Aid.AwardPerCheckIn}} 积分</label>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-4 col-md-offset-2">
+                                连续多长时间可以分红
+                            </div>
+                            <div class="col-md-4">
+                                <label class="label label-info">{{.jal.BonusNeedStep}} {{checkinperiod .jal.Aid.CheckInPeriod}}</label>
                             </div>
                         </div>
                         <div class="form-group row">

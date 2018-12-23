@@ -38,7 +38,7 @@ func ShareMissedAttendance() {
 	ormObj := orm.NewOrm()
 	activities := ListActivities(map[string]interface{}{"status": models.StatusNormal})
 	for _, act := range activities {
-		allJoinedAmount := AccoutingActivityByStatus(act.Aid, nil)
+		allJoinedAmount := AccoutingActivityByStatus(act.Aid, []int8{models.JalStatusMissed})
 
 		if allJoinedAmount <= 0 {
 			logs.Warn("no more joined amount of Aid:%d, ignore", act.Aid)
@@ -51,7 +51,6 @@ func ShareMissedAttendance() {
 			if err != nil {
 				logs.Error("update act(%d).joined_amount error:%v", act.Aid, err)
 			}
-
 		}
 
 		missedJals := ListMissedJal(act.Aid)
@@ -110,13 +109,14 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 		logs.Warn("missedJal.JoinPrice is empty, no need to share")
 		return nil
 	}
-	//allAchievedFeederGoods := GetAllAchievedGolds()
-	missedJal.Status = models.JalStatusShared
 
+	missedJal.Status = models.JalStatusShared
 	ormObj.Update(missedJal, "status")
 
 	for _, sjal := range successJals {
-		oneBonus := missedJal.JoinPrice * (sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts)
+		oneBonus := missedJal.JoinPrice * sjal.JoinPrice * sjal.Step / sjal.BonusNeedStep / allJoinedAmounts
+		logs.Debug("BONUS(%d) from uid(%d) jal(%d).amount(%d) to uid(%d) jal(%d) step:%d/%d join:%d allJoined:%d",
+			oneBonus, missedJal.Uid, missedJal.JalId, missedJal.JoinPrice, sjal.Uid, sjal.JalId, sjal.Step, sjal.BonusNeedStep, sjal.JoinPrice, allJoinedAmounts)
 		SharedToOne(missedJal, sjal, oneBonus, act)
 		//DispatchBonus(oneBonus, sjal)
 	}
@@ -125,7 +125,9 @@ func ShareMissedJal(missedJal *models.JoinActivityLog, successJals []*models.Joi
 }
 
 func SharedToOne(missedJal *models.JoinActivityLog, toJal *models.JoinActivityLog, amount int, act *models.AttendanceActivity) {
-	utlId, err := Award(toJal.Uid, amount, models.TradeTypeCheckInBonus, act.Name)
+	// todo: if amount==0
+
+	utlId, err := Award(toJal.Uid, amount, models.TradeTypeCheckInBonus, "打卡分红:"+act.Name)
 	if err != nil {
 		logs.Error("dispatch bonus to jal(%d) error:%v", toJal.JalId, err)
 		return
