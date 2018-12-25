@@ -46,13 +46,18 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	}
 
 	assumeStep := schedules.EstimateStep(minTime, nowStr, checkInPeriodToDuration(jal.Aid.CheckInPeriod))
+	if jal.Step != assumeStep {
+		jal.Status = models.JalStatusMissed
+		ormObj.Update(jal, "status")
+		return fmt.Errorf("PREVIOUS STEP MISSED of jal(%d), expected:%d, now step in db:%d", jal.JalId, assumeStep, jal.Step)
+	}
 
 	// 本时间点的对应的key
 	checkInElem := cir.GetCheckInScheduleElem(jal.Aid.CheckInPeriod, jal.JalId, now, cirKey)
 	checkInKeyTypeWill := cirKey
 	checkInKeyWill := checkInElem.Key
 
-	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s assumeStep=:%d minTime=%s now=%s", checkInKeyTypeWill, checkInKeyWill, assumeStep, minTime, nowStr)
+	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s assumeStep=%d minTime=%s now=%s", checkInKeyTypeWill, checkInKeyWill, assumeStep, minTime, nowStr)
 
 	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("aid", act.Aid).Filter("check_in_key", checkInKeyWill).All(&todayCheckInLog)
 
@@ -90,10 +95,6 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 				jal.Status = models.JalStatusAchieved
 				// todo: notify to calc jal bonus next step
 			}
-			if jal.Step < assumeStep {
-				jal.Status = models.JalStatusMissed
-			}
-
 			// save jal, insert checkInLog
 
 			// insert db
@@ -122,7 +123,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			checkOk = true
 			return nil
 		}
-		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d ", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx)
+		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d assumeStep=%d", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx, assumeStep)
 		return fmt.Errorf("jal(%d)s in schedules but step illegel:%d expect(or missed):%d", jal.JalId, stepIdx, jal.Step)
 
 	case models.JalStatusAchieved:
@@ -151,7 +152,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return fmt.Errorf("update jal step error:%v", err)
 		}
 		checkOk = true
-		logs.Debug("jal:%d jal.Step=%d/%d ", jal.JalId, jal.Step, jal.BonusNeedStep)
+		logs.Debug("jal:%d jal.Step=%d/%d assumeStep=%d", jal.JalId, jal.Step, jal.BonusNeedStep, assumeStep)
 
 	case models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared:
 		return fmt.Errorf("jal(%d) is in unmormal stauts:%v", jal.JalId, models.JalStatusMap[jal.Status])
