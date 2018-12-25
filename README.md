@@ -1,5 +1,5 @@
 # daily-attendance
-a Daily Attendance app writen by go, use beego and bootstrap frame work. support wechat OA accounts.
+a Daily Attendance app writen by go, use beego and bootstrap framework. support wechat OA accounts.
 
 # Requirement
 
@@ -15,17 +15,22 @@ go get -u github.com/mattn/go-runewidth
 $ git clone git@github.com:uxff/daily-attendance.git
 $ cd daily-attendance
 #
-# need node and npm
-$ npm install -g bower
-$ bower install
+#
+# need node and npm and bower
+# its ALREADY INSTALLED, no need do this
+# $ npm install -g bower
+# $ bower install
+#
 #
 # build
 $ go build
 #
+#
 # you need start mysql service, and config mysql in:
 $ vim conf/app.conf
-# add line:
- datasource=root:password@tcp(127.0.0.1:3306)/beegoauth?charset=utf8
+# edit line:
+ datasource=root:password@tcp(127.0.0.1:3306)/attendance?charset=utf8
+# you must create database attendance firstly
 
 ```
 

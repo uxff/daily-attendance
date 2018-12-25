@@ -52,7 +52,7 @@ func ShareMissedAttendance() {
 
 		if unsharedAmount != act.UnsharedAmount {
 			act.UnsharedAmount = unsharedAmount
-			_, err := ormObj.Update(act, "joined_amount")
+			_, err := ormObj.Update(act, "unshared_amount")
 			if err != nil {
 				logs.Error("update act(%d).joined_amount error:%v", act.Aid, err)
 			}
@@ -180,7 +180,7 @@ func StopAllUnachiedJal() {
 		stepIdx := schedules.EstimateStep(min, now.Format("2006-01-02 15:04:05"), checkInPeriodToDuration(jal.Aid.CheckInPeriod))
 		if (stepIdx - jal.Step) > 1 {
 			// no
-			logs.Debug("jal:%d db step:%d estimate step:%d will be missed", jal.JalId, jal.Step, stepIdx)
+			logs.Debug("jal:%d db step:%d estimate step:%d WILL BE MISSED", jal.JalId, jal.Step, stepIdx)
 			jal.Status = models.JalStatusMissed
 			ormObj.Update(jal, "status")
 		}
@@ -219,10 +219,10 @@ func AccoutingActivityByStatus(Aid int, status []int8) (sum int) {
 
 	err = ormObj.Raw(sql, Aid).QueryRow(&theSum)
 	if err != nil {
-		logs.Warn("query(%s) error:%v", sql, err)
+		logs.Error("query(%s) error:%v", sql, err)
 	}
 
-	logs.Debug("--------Aid:%d sum:%d sts:%s", Aid, theSum.Thesum, sts)
+	//logs.Debug("--------Aid:%d sum:%d sts:%s", Aid, theSum.Thesum, sts)
 
 	return theSum.Thesum //, theSum.TheCount
 }

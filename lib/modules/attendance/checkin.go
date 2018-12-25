@@ -79,6 +79,10 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return fmt.Errorf("now is NOT in jal(%d)s schedules(%v), min:%s max:%s ", jal.JalId, jal.Schedule, minTime, maxTime)
 		}
 
+		if stepIdx != assumeStep {
+			return fmt.Errorf("WRONG step of jal(%s), expected:%d, now step:%d", jal.JalId, assumeStep, stepIdx)
+		}
+
 		if jal.Step == stepIdx {
 			// its the ok time
 			jal.Step++
