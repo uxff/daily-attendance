@@ -2,6 +2,8 @@ package models
 
 import (
 	"os"
+	"time"
+	"math/rand"
 	"encoding/json"
 	"io/ioutil"
 
@@ -112,4 +114,27 @@ func LoadFriendlyLinksFromFile(f string) FriendlyLinks {
 
 	return theFriendlyLinks
 }
+
+func ShuffleLinks(links FriendlyLinks) FriendlyLinks {
+	thelen := len(links)
+	targetLinks := make(FriendlyLinks, 0, thelen)
+	roundNum := time.Now().Unix()
+	roundStart := rand.Int()%thelen
+
+	switch true {
+	case roundNum&1 == 0:
+		// 正序
+		for i := 0; i<thelen; i++ {
+			targetLinks = append(targetLinks, links[(i+roundStart)%thelen])
+		}
+	case roundNum&1 == 1:
+		// 倒叙
+		for i := 0; i<thelen; i++ {
+			targetLinks = append(targetLinks, links[(-i+roundStart+thelen)%thelen])
+		}
+	}
+
+	return targetLinks
+}
+
 

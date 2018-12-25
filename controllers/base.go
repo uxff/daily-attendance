@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"time"
-	"math/rand"
 
 	"github.com/astaxie/beego"
 	"github.com/ikeikeikeike/gopkg/convert"
@@ -61,7 +59,7 @@ func (c *BaseController) Prepare() {
 
 	friendlinks := models.GetFriendlyLinks() // models.LoadFriendlyLinks()
 
-	c.Data["friendlyLinks"] = ShuffleLinks(friendlinks)
+	c.Data["friendlyLinks"] = models.ShuffleLinks(friendlinks)
 
 	c.Layout = "base.tpl"
 	c.LayoutSections = make(map[string]string)
@@ -110,26 +108,4 @@ func (c *BaseController) BuildRequestUrl(uri string) string {
 	}
 	return fmt.Sprintf("%s:%s%s",
 		c.Ctx.Input.Site(), convert.ToStr(c.Ctx.Input.Port()), uri)
-}
-
-func ShuffleLinks(links models.FriendlyLinks) models.FriendlyLinks {
-	thelen := len(links)
-	targetLinks := make(models.FriendlyLinks, 0, thelen)
-	roundNum := time.Now().Unix()
-	roundStart := rand.Int()%thelen
-
-	switch true {
-	case roundNum&1 == 0:
-		// 正序
-		for i := 0; i<thelen; i++ {
-			targetLinks = append(targetLinks, links[(i+roundStart)%thelen])
-		}
-	case roundNum&1 == 1:
-		// 倒叙
-		for i := 0; i<thelen; i++ {
-			targetLinks = append(targetLinks, links[(-i+roundStart+thelen)%thelen])
-		}
-	}
-
-	return targetLinks
 }

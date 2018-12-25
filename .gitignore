@@ -3,3 +3,4 @@
 *.so
 *.exe
 .idea
+conf/app.conf
