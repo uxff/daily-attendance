@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -111,15 +112,23 @@ func init() {
 	})
 
 	// needle=23 see=12,45,23,67 return trueEcho
-	beego.AddFuncMap("inarr", func(needle interface{}, see string, trueEcho, falseEcho string) string {
+	beego.AddFuncMap("inarr", func(needle interface{}, sea string, trueEcho, falseEcho string) string {
 		needleStr := fmt.Sprintf("%v", needle)
-		sees := strings.Split(see, ",")
-		for _, s := range sees {
+		seas := strings.Split(sea, ",")
+		for _, s := range seas {
 			if s == needleStr {
 				return trueEcho
 			}
 		}
 		return falseEcho
+	})
+
+	beego.AddFuncMap("genlist", func(num int) []string {
+		dss := make([]string, num)
+		for i := 0; i < num; i++ {
+			dss[i] = strconv.Itoa(i)
+		}
+		return dss
 	})
 
 }
