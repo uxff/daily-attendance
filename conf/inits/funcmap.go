@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"net/url"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 
@@ -123,12 +122,17 @@ func init() {
 		return falseEcho
 	})
 
-	beego.AddFuncMap("genlist", func(num int) []string {
-		dss := make([]string, num)
+	// genlist 2 3 4 return [3, 7]; genlist 4 5 6 return [5,11,17,23]
+	beego.AddFuncMap("genlist", func(num, start, eachStep int) []int {
+		dss := make([]int, num)
 		for i := 0; i < num; i++ {
-			dss[i] = strconv.Itoa(i)
+			dss[i] = i*eachStep + start
 		}
 		return dss
+	})
+
+	beego.AddFuncMap("plus", func(num1, num2 int) string {
+		return fmt.Sprintf("%d", num1+num2)
 	})
 
 }
