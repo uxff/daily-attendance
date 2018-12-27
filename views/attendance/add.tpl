@@ -39,34 +39,97 @@
                     </div>
                     <div class="form-group row">
                         <div class="col-md-4">
-                            <label for="checkInRule">打卡规则</label>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control" name="checkInRule" placeholder="请输入规则" value='{"HEALTH":{"timespan":"06:00-09:00"}}'>
-                        </div>
-
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-md-12 col-md-offset-0">
-
-                        <p >健康打卡规则举例:{"HEALTH":{"timespan":"06:00-09:00"}}</p>
-                        <p >上班打卡规则举例:{"WORKUP":{"timespan":"00:00-10:00"},"WORKOFF":{"timespan":"18:00-23:59"}}</p>
-                        <p >月报打卡规则举例:{"REPROT":{"dayspan":"01-05"}}</p>
-                        </div>
-
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-md-4">
                             <label for="needStep">连续多长时间可以分红</label>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" style="width: 80px;display: inline" name="needStep" placeholder="请输入天数" value="5">
-                            <select class="form-control" name="checkInPeriod" style="width: 80px;display: inline">
+                            <input type="text" class="form-control" style="width: 80px;display: inline" name="needStep" placeholder="请输入天数" value="5">x
+                            <select class="form-control da-checkin-period da-input-sm" name="checkInPeriod">
                                 <option value="3">分钟</option>
                                 <option value="4">小时</option>
                                 <option value="5" selected>天</option>
-                                <option value="6">月</option>
+                                <option value="6">周</option>
+                                <option value="7">月</option>
                             </select>
+                            <p>设置5天表示要求连续5天每天打一次卡才能享受分红</p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <label for="checkInRule">打卡规则</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control da-checkin-rule" name="checkInRule" placeholder="请输入规则" value='{"HEALTH":{"timespan":"06:00-09:00"}}'>
+                        </div>
+
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-md-4">
+                            <label for="checkInRule">时间段</label>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="da-timespan da-timespan-3">任意</span>
+                            <span class="da-timespan da-timespan-4">
+
+                            <select class="form-control da-timespan-start-4 da-input-sm" name="minspan-start">
+                            {{range $k, $v := genlist 60 0 1}}
+                                <option value="{{$v}}:00">{{$v}}分</option>
+                            {{end}}
+                            </select>-
+                            <select class="form-control da-timespan-end-4 da-input-sm" name="minspan-end">
+                            {{range $k, $v := genlist 60 0 1}}
+                                <option value="{{$v}}:59">{{$v}}分</option>
+                            {{end}}
+                            </select>
+                            </span>
+                            <span class="da-timespan da-timespan-5">
+                            <select class="form-control da-timespan-start-5 da-input-sm" name="hourspan-start">
+                            {{range $kh, $vh := genlist 24 0 1}}
+                            {{range $km, $vm := genlist 12 0 5}}
+                                <option value="{{$vh}}:{{$vm}}">{{$vh}}点{{$vm}}分</option>
+                            {{end}}
+                            {{end}}
+                            </select>-
+                            <select class="form-control da-timespan-end-5 da-input-sm" name="hourspan-end">
+                            {{range $kh, $vh := genlist 24 0 1}}
+                            {{range $km, $vm := genlist 12 0 5}}
+                                <option value="{{$vh}}:{{$vm}}">{{$vh}}点{{$vm}}分</option>
+                            {{end}}
+                            {{end}}
+                                <option value="23:59">23点59分</option>
+                            </select>
+                            </span>
+                            <span class="da-timespan da-timespan-6">
+                            <select class="form-control da-timespan-start-6 da-input-sm" name="weekdayspan-start">
+                            {{range $k, $v := genlist 7 1 1}}
+                                <option value="{{$k}}">{{$v}}</option>
+                            {{end}}
+                            </select>-
+                            <select class="form-control da-timespan-end-6 da-input-sm" name="weekdayspan-end">
+                            {{range $k, $v := genlist 7 1 1}}
+                                <option value="{{$k}}">{{$v}}</option>
+                            {{end}}
+                            </select>
+                            </span>
+                            <span class="da-timespan da-timespan-7">
+                            <select class="form-control da-timespan-start-7 da-input-sm" name="dayspan-start">
+                            {{range $k, $v := genlist 31 1 1}}
+                                <option value="{{$k}}">{{$v}}日</option>
+                            {{end}}
+                            </select>-
+                            <select class="form-control da-timespan-end-7 da-input-sm" name="dayspan-end">
+                            {{range $k, $v := genlist 31 1 1}}
+                                <option value="{{$k}}">{{$v}}日</option>
+                            {{end}}
+                            </select>
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="form-group row hide">
+                        <div class="col-md-12 col-md-offset-0">
+                        <p >健康打卡规则举例:{"HEALTH":{"timespan":"06:00-09:00"}}</p>
+                        <p >上班打卡规则举例:{"WORKUP":{"timespan":"00:00-10:00"},"WORKOFF":{"timespan":"18:00-23:59"}}</p>
+                        <p >月报打卡规则举例:{"REPROT":{"dayspan":"01-05"}}</p>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -87,7 +150,7 @@
                     </div>
                     {{.xsrfdata}}
                     <div class="form-group text-center">
-                        <button type="submit" class="btn btn-primary">提交</button>
+                        <button type="submit" class="btn btn-primary da-btn-add-act">提交</button>
                     </div>
                 </form>
 

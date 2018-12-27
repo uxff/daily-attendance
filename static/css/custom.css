@@ -92,3 +92,9 @@ div .thumbnail-title {
     margin-bottom: 3px;
 }
 
+
+.da-input-sm {
+    width: 100px;
+    display: inline;
+    padding-left: 4px;
+}
