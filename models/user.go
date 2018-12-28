@@ -22,18 +22,24 @@ const (
 
 type User struct {
 	Uid            int       `orm:"pk;auto"`
-	Email          string    `orm:"size(64);unique" form:"Email" valid:"Required;Email"`
+	Email          string    `orm:"size(64)" form:"Email" valid:"Required;Email"` // unique if registered by emal
 	Password       string    `orm:"size(32)" form:"Password" valid:"Required;MinSize(6)"`
 	Repassword     string    `orm:"-" form:"Repassword" valid:"Required"`
 	Lastlogintime  time.Time `orm:"type(datetime)" form:"-"`
 	Created        time.Time `orm:"auto_now_add;type(datetime)"`
 	Updated        time.Time `orm:"auto_now;type(datetime)"`
+	Status         int       `orm:"type(tinyint);default(1)"`
 	EmailActivated time.Time `orm:"type(datetime)"`
-	Lastloginip    string    `orm:"size(16);default('')"`
-	Phone          string    `orm:"size(16);default('')"`
+	Lastloginip    string    `orm:"size(16);default()"`
+	Phone          string    `orm:"size(16);default()"`
 	PhoneActivated time.Time `orm:"type(datetime)"`
-	Nickname       string    `orm:"size(20);default('')"`
+	Nickname       string    `orm:"size(20);default()"`
 	Role           int       `orm:"-"`
+	UpstreamUid    *User     `orm:"rel(fk);default(0);null"`
+	Openid         string    `orm:"size(32)"`
+	WoaId          int       `orm:"type(int);default(0)"`
+	WxNickname     string    `orm:"size(32)"`
+	WxLogoUrl      string    `orm:"size(256)"`
 	//SocialFlag 	int
 }
 

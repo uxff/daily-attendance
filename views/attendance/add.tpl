@@ -53,7 +53,7 @@
                             <p>设置5天表示要求连续5天每天打一次卡才能享受分红</p>
                         </div>
                     </div>
-                    <div class="form-group row">
+                    <div class="form-group row hide">
                         <div class="col-md-4">
                             <label for="checkInRule">打卡规则</label>
                         </div>
@@ -64,7 +64,7 @@
                     </div>
                     <div class="form-group row">
                         <div class="col-md-4">
-                            <label for="checkInRule">时间段</label>
+                            <label for="checkInRule">时间段要求</label>
                         </div>
                         <div class="col-md-4">
                             <span class="da-timespan da-timespan-3">任意</span>
