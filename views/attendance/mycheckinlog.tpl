@@ -28,7 +28,13 @@
                 <tr>
                     <td>{{$step}}</td>
                     <td>{{$checkInElem.From}} -> {{$checkInElem.To}}</td>
-                    <td>{{$checkInElem.CilId}}</td>
+                    <td>
+                    {{ if gt $checkInElem.CilId 0}}
+                        <span class="label label-success "><i class="glyphicon glyphicon-check"></i></span>
+                    {{else}}
+                        <span class="label label-default "><i class="glyphicon glyphicon-check"></i></span>
+                    {{end}}
+                    </td>
                 </tr>
                 {{end}}
                 {{end}}

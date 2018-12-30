@@ -240,6 +240,7 @@ func (c *AttendanceController) Checkin() {
 
 	err := attendance.UserCheckIn(c.Userinfo.Uid, jal)
 	if err != nil {
+		logs.Error("user(%d) jal(%d) CheckIn failed:%v", jal.Uid, jal.JalId, err)
 		flash.Warning("活动[%s]打卡失败：%v", jal.Aid.Name, err)
 		flash.Store(&c.Controller)
 		return
