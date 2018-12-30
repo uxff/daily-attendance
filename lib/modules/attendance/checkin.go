@@ -45,11 +45,12 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 		return fmt.Errorf("now is not in activity(%d)s rule(%v)", jal.Aid.Aid, jal.Aid.CheckInRule)
 	}
 
-	assumeStep := schedules.EstimateStep(minTime, nowStr, checkInPeriodToDuration(jal.Aid.CheckInPeriod))
-	if jal.Step != assumeStep {
+	assumeStepIdx := schedules.EstimateStep(minTime, nowStr, checkInPeriodToDuration(jal.Aid.CheckInPeriod))
+	// 必须在准备打卡的阶段或者已经打卡的阶段
+	if jal.Step != assumeStepIdx && jal.Step != assumeStepIdx+1 {
 		jal.Status = models.JalStatusMissed
 		ormObj.Update(jal, "status")
-		return fmt.Errorf("PREVIOUS STEP MISSED of jal(%d), expected:%d, now step in db:%d", jal.JalId, assumeStep, jal.Step)
+		return fmt.Errorf("PREVIOUS STEP MISSED of jal(%d), expected:%d, now step in db:%d", jal.JalId, assumeStepIdx, jal.Step)
 	}
 
 	// 本时间点的对应的key
@@ -57,7 +58,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 	checkInKeyTypeWill := cirKey
 	checkInKeyWill := checkInElem.Key
 
-	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s assumeStep=%d minTime=%s now=%s", checkInKeyTypeWill, checkInKeyWill, assumeStep, minTime, nowStr)
+	logs.Debug("the checkInKeyTypeWill=%s, checkInKeyWill=%s assumeStepIdx=%d minTime=%s now=%s", checkInKeyTypeWill, checkInKeyWill, assumeStepIdx, minTime, nowStr)
 
 	ormObj.QueryTable(models.CheckInLog{}).Filter("uid", Uid).Filter("aid", act.Aid).Filter("check_in_key", checkInKeyWill).All(&todayCheckInLog)
 
@@ -84,8 +85,8 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return fmt.Errorf("now is NOT in jal(%d)s schedules(%v), min:%s max:%s ", jal.JalId, jal.Schedule, minTime, maxTime)
 		}
 
-		if stepIdx != assumeStep {
-			return fmt.Errorf("WRONG step of jal(%s), expected:%d, now step:%d", jal.JalId, assumeStep, stepIdx)
+		if stepIdx != assumeStepIdx {
+			return fmt.Errorf("WRONG step of jal(%s), expected:%d, now step:%d", jal.JalId, assumeStepIdx, stepIdx)
 		}
 
 		if jal.Step == stepIdx {
@@ -123,13 +124,13 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			checkOk = true
 			return nil
 		}
-		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d assumeStep=%d", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx, assumeStep)
+		logs.Debug("jal:%d jal.Step=%d/%d stepIdx=%d assumeStepIdx=%d", jal.JalId, jal.Step, jal.BonusNeedStep, stepIdx, assumeStepIdx)
 		return fmt.Errorf("jal(%d)s in schedules but step illegel:%d expect(or missed):%d", jal.JalId, stepIdx, jal.Step)
 
 	case models.JalStatusAchieved:
 		// will get bonus
 		jal.Step++
-		if jal.Step < assumeStep {
+		if jal.Step < assumeStepIdx {
 			jal.Status = models.JalStatusMissed
 		}
 
@@ -152,7 +153,7 @@ func UserCheckIn(Uid int, jal *models.JoinActivityLog) error {
 			return fmt.Errorf("update jal step error:%v", err)
 		}
 		checkOk = true
-		logs.Debug("jal:%d jal.Step=%d/%d assumeStep=%d", jal.JalId, jal.Step, jal.BonusNeedStep, assumeStep)
+		logs.Debug("jal:%d jal.Step=%d/%d assumeStepIdx=%d", jal.JalId, jal.Step, jal.BonusNeedStep, assumeStepIdx)
 
 	case models.JalStatusStopped, models.JalStatusMissed, models.JalStatusShared:
 		return fmt.Errorf("jal(%d) is in unmormal stauts:%v", jal.JalId, models.JalStatusMap[jal.Status])
