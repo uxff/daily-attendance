@@ -126,6 +126,7 @@ func (c *UsersController) Signup() {
 	// 必须填写默认值，否则数据库报错
 	u.EmailActivated = time.Time{}
 	u.PhoneActivated = time.Unix(0, 0)
+	u.WxUnsubscribed = time.Unix(0, 0)
 
 	id, err := lib.SignupUser(u)
 	if err != nil || id < 1 {

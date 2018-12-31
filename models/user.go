@@ -38,6 +38,7 @@ type User struct {
 	UpstreamUid    *User     `orm:"rel(fk);default(0);null"`
 	Openid         string    `orm:"size(32)"`
 	WoaId          int       `orm:"type(int);default(0)"`
+	WxUnsubscribed time.Time `orm:"type(datetime)"`
 	WxNickname     string    `orm:"size(32)"`
 	WxLogoUrl      string    `orm:"size(256)"`
 	//SocialFlag 	int
