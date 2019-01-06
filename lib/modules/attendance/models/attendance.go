@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+/* common status defined for each entity */
 const (
 	StatusNormal  = 1
 	StatusDeleted = 99

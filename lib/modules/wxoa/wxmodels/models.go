@@ -2,6 +2,7 @@ package wxmodels
 
 import "time"
 
+/*微信公众号配置*/
 type WechatOfficalAccounts struct {
 	WoaId          int       `orm:"pk;auto"`
 	Name           string    `orm:"size(32)"`

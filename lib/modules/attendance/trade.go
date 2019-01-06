@@ -9,6 +9,7 @@ import (
 	"github.com/uxff/daily-attendance/lib/modules/attendance/models"
 )
 
+/*trade only for payableObject*/
 type PayableObject interface {
 	PaySuccessCallback()
 	PayFailCallback(error)
