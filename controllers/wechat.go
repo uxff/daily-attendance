@@ -9,6 +9,15 @@ import (
 
 	"github.com/uxff/daily-attendance/lib/modules/wxoa/wxmodels"
 	"github.com/uxff/daily-attendance/models"
+	"github.com/astaxie/beego/logs"
+	"strings"
+	"github.com/uxff/daily-attendance/lib/utils/oncetoken"
+	"time"
+	"github.com/uxff/daily-attendance/lib"
+)
+
+const (
+	OauthToken  = "fromda"
 )
 
 type WechatController struct {
@@ -17,6 +26,8 @@ type WechatController struct {
 	Openid   string
 	Userinfo *models.User
 	Wxoa     *wxmodels.WechatOfficalAccounts
+	Wc 	     *wechat.Wechat
+	OauthToken string
 }
 
 func (c *WechatController) Prepare() {
@@ -27,6 +38,7 @@ func (c *WechatController) Prepare() {
 	woa := wxmodels.GetWoa(oaId)
 
 	if woa == nil {
+		logs.Warn("wxoaId not found:%d", oaId)
 		return
 	}
 
@@ -36,7 +48,7 @@ func (c *WechatController) Prepare() {
 		运行中config可以设置多次，但是setMessageHandler不需要每次请求都调用。
 	*/
 
-	wc := wechat.NewWechat(&wechat.Config{
+	c.Wc = wechat.NewWechat(&wechat.Config{
 		AppID:          woa.Appid,
 		AppSecret:      woa.Appsecret,
 		Token:          woa.Token,
@@ -44,7 +56,7 @@ func (c *WechatController) Prepare() {
 	})
 
 	// 传入request和responseWriter
-	server := wc.GetServer(c.Ctx.Request, c.Ctx.ResponseWriter)
+	server := c.Wc.GetServer(c.Ctx.Request, c.Ctx.ResponseWriter)
 
 	server.GetOpenID()
 
@@ -67,10 +79,104 @@ func (c *WechatController) Prepare() {
 	server.Send()
 }
 
-func (c *WechatController) CheckOauth() {
+// open this on pc, show a qr code
+func (c *WechatController) ShowQrForLogin() {
 
 }
 
-func (c *WechatController) Index() {
+// on wechat client, open this, it will start oauth
+func (c *WechatController) OauthLogin() {
+	oauth := c.Wc.GetOauth()
+	logs.Info("a oauthlogin request")
 
+	//otoken := oncetoken.GenToken()
+
+	err := oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.URLFor("WechatController.OauthCallback"), "snsapi_userinfo", OauthToken)
+	if err != nil {
+		logs.Error("make oauth login failed:%v", err)
+		c.Ctx.WriteString(fmt.Sprintf("make oauth login failed:%v", err))
+		return
+	}
+
+	//
+	logs.Info("start oauth ok")
+}
+
+
+//
+func (c *WechatController) OauthCallback() {
+	oauth := c.Wc.GetOauth()
+	code := c.GetString("code")
+	resToken, err := oauth.GetUserAccessToken(code)
+	if err != nil {
+		logs.Error("get access token by code failed: code=%s", code)
+		return
+	}
+
+	logs.Info("resToken is :%+v", resToken)
+	userInfo, err := oauth.GetUserInfo(resToken.AccessToken, resToken.OpenID)
+	if err != nil {
+		logs.Error("get userinfo by openid failed: openid=%s", resToken.OpenID)
+		return
+	}
+
+	logs.Info("userInfo from wx:%+v", userInfo)
+
+	var uid int
+
+	// 查看 openid 是否注册过 未注册则注册并登录 注册则登录
+	existUser := models.GetByEmail(userInfo.OpenID)
+	if existUser != nil {
+		uid = existUser.Uid
+		logs.Info("user exist when oauthcallback: uid:%d", uid)
+	} else {
+		u := &models.User{
+			Email:resToken.OpenID,
+			Openid:resToken.OpenID,
+			WxLogoUrl:userInfo.HeadImgURL,
+			WxNickname:userInfo.Nickname,
+			WoaId:1,
+		}
+
+		if c.Wxoa != nil {
+			logs.Info("wxoa exist when register by wechat")
+			u.WoaId = c.Wxoa.WoaId
+		}
+
+		u.Lastlogintime = time.Unix(0, 0)
+
+		// 必须填写默认值，否则数据库报错
+		u.EmailActivated = time.Time{}
+		u.PhoneActivated = time.Unix(0, 0)
+		u.WxUnsubscribed = time.Unix(0, 0)
+
+		uid, err = lib.SignupUser(u)
+		if err != nil || id < 1 {
+			logs.Error("register from wx failed:%v", err)
+			return
+		}
+
+		logs.Info("register from wx ok:id:%d openid:%s", uid, u.Openid)
+	}
+
+
+
+	utoken := oncetoken.GenToken()
+
+	c.Redirect(c.URLFor("UserController.LoginByWechat", "token", utoken, "uid", uid), 303)
+
+}
+
+// show qr code
+func (c *WechatController) Index() {
+	// 判断是否微信中打开
+	ua := c.Ctx.Request.Header.Get("User-Agent")
+	if strings.Index(strings.ToLower(ua), "micromessenger") > 0 {
+		// is in wechat client
+		logs.Info("this is in micromessenger, will redirect to oauth login")
+		c.Redirect(c.URLFor("WechatController.OauthLogin"), 303)
+	}
+
+	logs.Info("this is NOT in micromessenger")
+	c.Ctx.WriteString("please open this page in wechat client")
 }

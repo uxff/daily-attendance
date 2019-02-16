@@ -9,6 +9,7 @@ import (
 	"github.com/uxff/daily-attendance/lib/modules/attendance"
 	models2 "github.com/uxff/daily-attendance/lib/modules/attendance/models"
 	"github.com/uxff/daily-attendance/models"
+	"github.com/uxff/daily-attendance/lib/utils/oncetoken"
 )
 
 type UsersController struct {
@@ -198,4 +199,40 @@ func (c *UsersController) Invite() {
 		return
 	}
 	c.TplName = "users/invite.tpl"
+}
+
+func (c *UsersController) LoginByWechat() {
+
+	if c.IsLogin {
+		//logs.Debug("is login ?>?????")
+		c.Ctx.Redirect(302, c.URLFor("UsersController.Index"))
+		return
+	}
+
+	c.TplName = "login/login.tpl"
+	flash := beego.NewFlash()
+
+
+	utoken := c.GetString("token")
+	uid, _ := c.GetInt("uid")
+
+	if !oncetoken.VerifyToken(utoken) {
+		flash.Warning("页面已过期，请稍后再试")
+		flash.Store(&c.Controller)
+		return
+	}
+
+	user := models.GetByUid(uid)
+	if user == nil {
+		flash.Warning("要登录的用户不存在(uid=%d)", uid)
+		flash.Store(&c.Controller)
+		return
+	}
+
+	flash.Success("登录成功")
+	flash.Store(&c.Controller)
+
+	c.SetLogin(user)
+
+	c.Redirect(c.URLFor("UsersController.Index"), 303)
 }

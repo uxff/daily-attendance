@@ -20,6 +20,12 @@ const (
 	FlagEmailVerified  = 1
 )
 
+func init() {
+	orm.RegisterModelWithPrefix(
+		beego.AppConfig.String("dbprefix"),
+		new(User))
+}
+
 type User struct {
 	Uid            int       `orm:"pk;auto"`
 	Email          string    `orm:"size(64)" form:"Email" valid:"Required;Email"` // unique if registered by emal
@@ -100,8 +106,12 @@ func (m *User) IsAdmin() bool {
 	return m.Role == RoleAdmin
 }
 
-func init() {
-	orm.RegisterModelWithPrefix(
-		beego.AppConfig.String("dbprefix"),
-		new(User))
+func GetByEmail(email string) *User {
+	u := &User{}
+}
+
+func GetByUid(uid int) *User {
+	u := &User{}
+	orm.NewOrm().QueryTable(u).Filter("uid", uid).One(u)
+	return u
 }

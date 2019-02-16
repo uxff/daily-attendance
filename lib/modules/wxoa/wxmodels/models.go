@@ -1,6 +1,16 @@
 package wxmodels
 
-import "time"
+import (
+	"time"
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego"
+)
+
+func init() {
+	orm.RegisterModelWithPrefix(
+		beego.AppConfig.String("dbprefix"),
+		new(WechatOfficalAccounts))
+}
 
 /*微信公众号配置*/
 type WechatOfficalAccounts struct {
@@ -15,3 +25,5 @@ type WechatOfficalAccounts struct {
 	Updated        time.Time `orm:"auto_now;type(datetime)"`
 	Status         int       `orm:"type(tinyint);default(1)"`
 }
+
+
