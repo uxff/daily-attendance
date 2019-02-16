@@ -35,7 +35,7 @@
                 <li><a href="/">获得瓜分最多</a></li>
             </ul>
         </li>
-        <li><a href='{{urlfor "IndexController.Index"}}'>
+        <li><a href='{{urlfor "AttendanceController.My"}}'>
           <span class="glyphicon glyphicon-list-alt"></span> 我的计划
         </a></li>
       </ul>

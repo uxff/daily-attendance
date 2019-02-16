@@ -1,22 +1,22 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
 	"github.com/silenceper/wechat"
 	"github.com/silenceper/wechat/message"
 
-
-	"github.com/uxff/daily-attendance/models"
 	"github.com/uxff/daily-attendance/lib/modules/wxoa/wxmodels"
-	"fmt"
+	"github.com/uxff/daily-attendance/models"
 )
 
 type WechatController struct {
 	beego.Controller
 
-	Openid string
+	Openid   string
 	Userinfo *models.User
-	Wxoa *wxmodels.WechatOfficalAccounts
+	Wxoa     *wxmodels.WechatOfficalAccounts
 }
 
 func (c *WechatController) Prepare() {
@@ -32,8 +32,8 @@ func (c *WechatController) Prepare() {
 
 	//config :=
 	/*
-	需要基于该类重新设计：
-	运行中config可以设置多次，但是setMessageHandler不需要每次请求都调用。
+		需要基于该类重新设计：
+		运行中config可以设置多次，但是setMessageHandler不需要每次请求都调用。
 	*/
 
 	wc := wechat.NewWechat(&wechat.Config{
@@ -66,7 +66,6 @@ func (c *WechatController) Prepare() {
 	//发送回复的消息
 	server.Send()
 }
-
 
 func (c *WechatController) CheckOauth() {
 

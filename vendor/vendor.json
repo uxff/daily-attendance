@@ -93,10 +93,28 @@
 			"revisionTime": "2016-11-01T13:27:42Z"
 		},
 		{
+			"checksumSHA1": "fvVoeETRxg13N2GlxydO+5slZdM=",
+			"path": "github.com/bradfitz/gomemcache/memcache",
+			"revision": "1952afaa557dc08e8e0d89eafab110fb501c1a2b",
+			"revisionTime": "2017-02-08T21:30:04Z"
+		},
+		{
+			"checksumSHA1": "j0zav+44VjO/VgvhOjU1zqG3KS0=",
+			"path": "github.com/funxdata/wechat/util",
+			"revision": "2acfc8d81df55a00564fbe455ecc096c1eba6cc3",
+			"revisionTime": "2018-12-28T04:04:05Z"
+		},
+		{
 			"checksumSHA1": "ZbU8qGzETzJZ2t30LmHxla5PLMY=",
 			"path": "github.com/go-sql-driver/mysql",
 			"revision": "bc14601d1bd56421dd60f561e6052c9ed77f9daf",
 			"revisionTime": "2018-01-25T05:47:45Z"
+		},
+		{
+			"checksumSHA1": "73htiRJAyEYC5HJaFtkhmosWlbE=",
+			"path": "github.com/gomodule/redigo/redis",
+			"revision": "02dc2736dbc3a4a56907b0d5a9fead2f71b499db",
+			"revisionTime": "2018-12-13T21:05:01Z"
 		},
 		{
 			"checksumSHA1": "u+Ee84EhTU59MuzQyQkvIk/Qv9A=",
@@ -115,6 +133,84 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "36e9d2ebbde5e3f13ab2e25625fd453271d6522e",
 			"revisionTime": "2018-01-03T17:44:51Z"
+		},
+		{
+			"checksumSHA1": "m7Ij/7yStHCMdnZDrjSb2d+iAFI=",
+			"path": "github.com/silenceper/wechat",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "ZGeNsjCjZtY6r1dupAxc+rg6S7M=",
+			"path": "github.com/silenceper/wechat/cache",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "cQpIKSdct+7+2HhXLqvAJWwTUDs=",
+			"path": "github.com/silenceper/wechat/context",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "irMPArUY7PB3hsIhHWbGP909NgQ=",
+			"path": "github.com/silenceper/wechat/js",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "yTm4YWPeqCxuddrS/IPafFMtcj0=",
+			"path": "github.com/silenceper/wechat/material",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "lBS30NZQZTcj1hlE+gj1Mtva/Cw=",
+			"path": "github.com/silenceper/wechat/menu",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "NRg3Elw7hGG+m1hgVoWG0DY3c+M=",
+			"path": "github.com/silenceper/wechat/message",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "DeuAepdubk6d0I+bsBufephcDmw=",
+			"path": "github.com/silenceper/wechat/oauth",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "kj7TvKXEadCw+wgaaYNhCkAl+cA=",
+			"path": "github.com/silenceper/wechat/pay",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "AC5+ehmKBo4YY91KiEWpayjahQ8=",
+			"path": "github.com/silenceper/wechat/server",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "RDTWgKPbLHrHlc4TY4AyZQe3eYQ=",
+			"path": "github.com/silenceper/wechat/template",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "ndUp4gkpNEqHHEHV+vLuqci50TU=",
+			"path": "github.com/silenceper/wechat/user",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
+		},
+		{
+			"checksumSHA1": "hjbVaQ5vMgNir2+8CTfGE2YVLlE=",
+			"path": "github.com/silenceper/wechat/util",
+			"revision": "593df23c462d01b5d3493a9504c6f021528eb6db",
+			"revisionTime": "2018-12-21T05:39:36Z"
 		}
 	],
 	"rootPath": "github.com/uxff/daily-attendance"
