@@ -5,6 +5,7 @@ import (
 	"time"
 	"fmt"
 	"sync"
+	"github.com/astaxie/beego/logs"
 )
 
 var tokens map[string]bool
@@ -27,7 +28,10 @@ func GenToken() string {
 		}
 
 		tokens[token] = true
-		time.AfterFunc(time.Second*300, func(){DeleteToken(token)})
+		time.AfterFunc(time.Second*300, func(){
+			logs.Info("the oncetoken [%s] will be deleted")
+			DeleteToken(token)
+		})
 		return token
 	}
 

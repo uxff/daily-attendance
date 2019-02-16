@@ -2,14 +2,12 @@ package wxmodels
 
 import (
 	"time"
-	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego"
 )
 
 func init() {
-	orm.RegisterModelWithPrefix(
-		beego.AppConfig.String("dbprefix"),
-		new(WechatOfficalAccounts))
+	//orm.RegisterModelWithPrefix(
+	//	beego.AppConfig.String("dbprefix"),
+	//	new(WechatOfficalAccounts))
 }
 
 /*微信公众号配置*/

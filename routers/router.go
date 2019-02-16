@@ -22,4 +22,9 @@ func init() {
 	beego.Router("/user/balance", &controllers.UsersController{}, "get:Balance")
 	beego.Router("/user/invite", &controllers.UsersController{}, "get:Invite")
 	beego.Router("/user/bonus", &controllers.UsersController{}, "get:Bonus")
+	beego.Router("/user/loginbywechat", &controllers.UsersController{}, "get:LoginByWechat")
+
+	beego.Router("/wechat/index", &controllers.WechatController{}, "get,post:Index")
+	beego.Router("/wechat/oauthlogin", &controllers.WechatController{}, "get,post:OauthLogin")
+	beego.Router("/wechat/oauthcallback", &controllers.WechatController{}, "get,post:OauthCallback")
 }

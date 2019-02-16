@@ -22,6 +22,7 @@ func (c *UsersController) NestPrepare() {
 	//	c.Ctx.Redirect(302, c.LoginPath())
 	//	return
 	//}
+	//logs.Info("Header:%+v", c.Ctx.Request.Header)
 }
 
 // func (c *UsersController) NestFinish() {}

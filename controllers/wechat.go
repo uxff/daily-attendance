@@ -20,6 +20,10 @@ const (
 	OauthToken  = "fromda"
 )
 
+/*
+	微信mp接口配置url应该填写：
+		yourdomain.com/wechat/index?oa=1
+*/
 type WechatController struct {
 	beego.Controller
 
@@ -28,10 +32,13 @@ type WechatController struct {
 	Wxoa     *wxmodels.WechatOfficalAccounts
 	Wc 	     *wechat.Wechat
 	OauthToken string
+	WechatApiDomain string // 需要nginx配置 proxy_set_header X-Host $host;proxy_set_header X-Scheme $scheme;
 }
 
 func (c *WechatController) Prepare() {
 
+	// 域名通过nginx配置获取 proxy_set_header X-Host $host;
+	c.WechatApiDomain =c.Ctx.Request.Header.Get("X-Scheme")+"://"+ c.Ctx.Request.Header.Get("X-Host")
 	//mpid := c.Input().Get("oa")
 	oaId, _ := c.GetInt("oa")
 
@@ -86,12 +93,16 @@ func (c *WechatController) ShowQrForLogin() {
 
 // on wechat client, open this, it will start oauth
 func (c *WechatController) OauthLogin() {
+	oaId := c.GetString("oa")
 	oauth := c.Wc.GetOauth()
-	logs.Info("a oauthlogin request")
+	logs.Info("a oauthlogin request, url:%s", c.WechatApiDomain+c.URLFor("WechatController.Index", "oa", oaId))
 
 	//otoken := oncetoken.GenToken()
 
-	err := oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.URLFor("WechatController.OauthCallback"), "snsapi_userinfo", OauthToken)
+	oauthUrl, err := oauth.GetRedirectURL(c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_base", OauthToken)
+	logs.Info("oauth url:%s", oauthUrl)
+
+	err = oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_base", OauthToken)
 	if err != nil {
 		logs.Error("make oauth login failed:%v", err)
 		c.Ctx.WriteString(fmt.Sprintf("make oauth login failed:%v", err))
@@ -99,12 +110,14 @@ func (c *WechatController) OauthLogin() {
 	}
 
 	//
-	logs.Info("start oauth ok")
+	logs.Info("start oauth ok: oaId:%s", oaId)
+	//c.Redirect(c.URLFor("WechatController.Index"))
 }
 
 
 //
 func (c *WechatController) OauthCallback() {
+	//oaId := c.GetString("oa")
 	oauth := c.Wc.GetOauth()
 	code := c.GetString("code")
 	resToken, err := oauth.GetUserAccessToken(code)
@@ -126,7 +139,7 @@ func (c *WechatController) OauthCallback() {
 
 	// 查看 openid 是否注册过 未注册则注册并登录 注册则登录
 	existUser := models.GetByEmail(userInfo.OpenID)
-	if existUser != nil {
+	if existUser != nil && existUser.Uid> 0 {
 		uid = existUser.Uid
 		logs.Info("user exist when oauthcallback: uid:%d", uid)
 	} else {
@@ -151,7 +164,7 @@ func (c *WechatController) OauthCallback() {
 		u.WxUnsubscribed = time.Unix(0, 0)
 
 		uid, err = lib.SignupUser(u)
-		if err != nil || id < 1 {
+		if err != nil || uid < 1 {
 			logs.Error("register from wx failed:%v", err)
 			return
 		}
@@ -163,20 +176,21 @@ func (c *WechatController) OauthCallback() {
 
 	utoken := oncetoken.GenToken()
 
-	c.Redirect(c.URLFor("UserController.LoginByWechat", "token", utoken, "uid", uid), 303)
+	c.Redirect(c.URLFor("UsersController.LoginByWechat", "token", utoken, "uid", uid), 303)
 
 }
 
 // show qr code
 func (c *WechatController) Index() {
+	oaId := c.GetString("oa")
 	// 判断是否微信中打开
 	ua := c.Ctx.Request.Header.Get("User-Agent")
 	if strings.Index(strings.ToLower(ua), "micromessenger") > 0 {
 		// is in wechat client
 		logs.Info("this is in micromessenger, will redirect to oauth login")
-		c.Redirect(c.URLFor("WechatController.OauthLogin"), 303)
+		c.Redirect(c.URLFor("WechatController.OauthLogin", "oa", oaId), 303)
 	}
 
-	logs.Info("this is NOT in micromessenger")
+	logs.Info("this is NOT in micromessenger. host:%s", c.Ctx.Request.Header.Get("X-Host"))
 	c.Ctx.WriteString("please open this page in wechat client")
 }

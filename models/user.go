@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 )
@@ -21,9 +20,9 @@ const (
 )
 
 func init() {
-	orm.RegisterModelWithPrefix(
-		beego.AppConfig.String("dbprefix"),
-		new(User))
+	//orm.RegisterModelWithPrefix(
+	//	beego.AppConfig.String("dbprefix"),
+	//	new(User))
 }
 
 type User struct {
@@ -108,6 +107,8 @@ func (m *User) IsAdmin() bool {
 
 func GetByEmail(email string) *User {
 	u := &User{}
+	orm.NewOrm().QueryTable(u).Filter("email", email).One(u)
+	return u
 }
 
 func GetByUid(uid int) *User {

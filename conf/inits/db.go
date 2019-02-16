@@ -11,6 +11,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	_ "github.com/uxff/daily-attendance/lib/modules/attendance/models"
 	_ "github.com/uxff/daily-attendance/models"
+	"github.com/uxff/daily-attendance/lib/modules/wxoa/wxmodels"
+	"github.com/uxff/daily-attendance/models"
 )
 
 func init() {
@@ -30,7 +32,16 @@ func init() {
 
 	orm.DefaultTimeLoc = time.FixedZone("Asia/Shanghai", 8*60*60)
 
+
+	// 这一步必须要在 orm.RunSyncdb(dbname, force, verbose) 前
+	orm.RegisterModelWithPrefix(
+		beego.AppConfig.String("dbprefix"),
+		new(models.User),
+		new(wxmodels.WechatOfficalAccounts),
+	)
+
 	force, verbose := false, true
+	// 必须要在 orm.RegisterModelWithPrefix() 后执行
 	err := orm.RunSyncdb(dbname, force, verbose)
 	if err != nil {
 		panic(err)
