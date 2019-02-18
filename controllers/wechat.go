@@ -99,10 +99,10 @@ func (c *WechatController) OauthLogin() {
 
 	//otoken := oncetoken.GenToken()
 
-	oauthUrl, err := oauth.GetRedirectURL(c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_base", OauthToken)
+	oauthUrl, err := oauth.GetRedirectURL(c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_userinfo", OauthToken)
 	logs.Info("oauth url:%s", oauthUrl)
 
-	err = oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_base", OauthToken)
+	err = oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_userinfo", OauthToken)
 	if err != nil {
 		logs.Error("make oauth login failed:%v", err)
 		c.Ctx.WriteString(fmt.Sprintf("make oauth login failed:%v", err))
@@ -147,8 +147,8 @@ func (c *WechatController) OauthCallback() {
 			Email:resToken.OpenID,
 			Openid:resToken.OpenID,
 			WxLogoUrl:userInfo.HeadImgURL,
-			WxNickname:userInfo.Nickname,
-			WoaId:1,
+			//WxNickname:userInfo.Nickname,
+			Nickname:userInfo.Nickname,
 		}
 
 		if c.Wxoa != nil {

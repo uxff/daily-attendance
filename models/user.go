@@ -44,7 +44,7 @@ type User struct {
 	Openid         string    `orm:"size(32)"`
 	WoaId          int       `orm:"type(int);default(0)"`
 	WxUnsubscribed time.Time `orm:"type(datetime)"`
-	WxNickname     string    `orm:"size(32)"`
+	//WxNickname     string    `orm:"size(32)"`
 	WxLogoUrl      string    `orm:"size(256)"`
 	//SocialFlag 	int
 }

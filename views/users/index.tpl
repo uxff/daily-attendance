@@ -46,7 +46,11 @@
                 </tr>
                 <tr>
                     <td>头像：</td>
-                    <td> -</td>
+                    <td>
+                        {{if .Userinfo.WxLogoUrl}}
+                            <img src="{{.Userinfo.WxLogoUrl}}">
+                        {{end}}
+                    </td>
                 </tr>
             </table>
         </div>
