@@ -53,5 +53,7 @@ $ ./daily-attendance
 - crontab
 - wx oa api
 
+# nginx 配置要求
 
+需要nginx配置 proxy_set_header X-Host $host;proxy_set_header X-Scheme $scheme;
 

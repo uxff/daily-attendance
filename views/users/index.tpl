@@ -34,7 +34,11 @@
                 </tr>
                 <tr>
                     <td>激活认证：</td>
-                    <td>  微信,Email,手机号</td>
+                    <td>
+                    {{if .Userinfo.Openid}}<span class="label label-default">微信</span>{{end}}
+                    {{if and .Userinfo.Email}}{{if not .Userinfo.Openid}}<span class="label label-default">Email</span>{{end}}{{end}}
+                    {{if .Userinfo.Phone}}<span class="label label-default">手机号</span>{{end}}
+                    </td>
                 </tr>
                 <tr>
                     <td>最后登录时间：</td>

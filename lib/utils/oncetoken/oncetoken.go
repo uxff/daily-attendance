@@ -29,7 +29,7 @@ func GenToken() string {
 
 		tokens[token] = true
 		time.AfterFunc(time.Second*300, func(){
-			logs.Info("the oncetoken [%s] will be deleted")
+			logs.Info("the oncetoken [%s] will be deleted", token)
 			DeleteToken(token)
 		})
 		return token
