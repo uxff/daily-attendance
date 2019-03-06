@@ -14,10 +14,12 @@ import (
 	"github.com/uxff/daily-attendance/lib/utils/oncetoken"
 	"time"
 	"github.com/uxff/daily-attendance/lib"
+	"math/rand"
+	"github.com/uxff/daily-attendance/lib/utils/fcache"
 )
 
 const (
-	OauthToken  = "fromda"
+	OauthState = "fromda"
 )
 
 /*
@@ -86,28 +88,71 @@ func (c *WechatController) Prepare() {
 	server.Send()
 }
 
+// todo pc show qr and phone scan
+// 在PC出示手机端登录二维码
 // open this on pc, show a qr code
-func (c *WechatController) ShowQrForLogin() {
+func (c *WechatController) ShowWxLoginQr() {
+	oaId := c.GetString("oa")
 
+	rsid := rand.Int63()
+	fcache.SetString(fmt.Sprintf("%d", rsid), "")
+
+	c.Data["rsid"] = rsid
+	c.Data["oaId"] = oaId
+
+	//cache.Cache("").Put(fmt.Sprintf(""))
+
+}
+
+// js 请求一次 看rsid登录或注册了没
+func (c *WechatController) IsRsidAuthed() {
+	//oaId := c.GetString("oa")
+	rsid := c.GetString("rsid")
+	c.ServeJSON(true)
+
+	if rsid == "" {
+		c.Ctx.WriteString(`{"url":""}`)
+		return
+	}
+
+	// rsid 中保存uid
+	v := fcache.GetInt(rsid)
+
+	if v != 0 {
+		utoken := oncetoken.GenToken()
+		u := c.WechatApiDomain+c.URLFor("UsersController.LoginByWechat", "token", utoken, "uid", v)
+		c.Ctx.WriteString(fmt.Sprintf(`{"url":"%s"}`, u))
+		return
+	}
+
+	c.Ctx.WriteString(`{"url":""}`)
 }
 
 // on wechat client, open this, it will start oauth
 func (c *WechatController) OauthLogin() {
 	oaId := c.GetString("oa")
 	oauth := c.Wc.GetOauth()
-	logs.Info("a oauthlogin request, url:%s", c.WechatApiDomain+c.URLFor("WechatController.Index", "oa", oaId))
+	logs.Info("a oauthlogin request, url:%s", c.URLFor("WechatController.Index", "oa", oaId))
 
 	//otoken := oncetoken.GenToken()
 
-	oauthUrl, err := oauth.GetRedirectURL(c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_userinfo", OauthToken)
+	scope := "snsapi_userinfo" // "snsapi_base" // "snsapi_login" //
+	oauthUrl, err := oauth.GetRedirectURL(c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), scope, OauthState)
 	logs.Info("oauth url:%s", oauthUrl)
 
-	err = oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), "snsapi_userinfo", OauthToken)
+	// return https://open.weixin.qq.com/connect/oauth2/authorize?...
+	// replace as https://open.weixin.qq.com/connect/qrconnect?...
+	//err = oauth.Redirect(c.Ctx.ResponseWriter, c.Ctx.Request, c.WechatApiDomain+ c.URLFor("WechatController.OauthCallback", "oa", oaId), scope, OauthState)
 	if err != nil {
 		logs.Error("make oauth login failed:%v", err)
 		c.Ctx.WriteString(fmt.Sprintf("make oauth login failed:%v", err))
 		return
 	}
+
+
+	//oauthUrl = strings.Replace(oauthUrl, "/connect/oauth2/authorize", "/connect/qrconnect", 1)
+
+	c.Redirect(oauthUrl, 303)
 
 	//
 	logs.Info("start oauth ok: oaId:%s", oaId)

@@ -8,10 +8,13 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-var tokens map[string]bool
+type tokenVal struct {
+	To *time.Timer
+}
+var tokens map[string]tokenVal
 
 func init() {
-	tokens = make(map[string]bool, 0)
+	tokens = make(map[string]tokenVal, 0)
 	rand.Seed(time.Now().UnixNano())
 }
 
@@ -24,14 +27,16 @@ func GenToken() string {
 
 		token := fmt.Sprintf("%d", rand.Int63())
 		if _, exist := tokens[token]; exist {
+			// 重复存在
 			continue
 		}
 
-		tokens[token] = true
-		time.AfterFunc(time.Second*300, func(){
+		to := time.AfterFunc(time.Second*300, func(){
 			logs.Info("the oncetoken [%s] will be deleted", token)
 			DeleteToken(token)
 		})
+		tokens[token] = tokenVal{To:to}
+
 		return token
 	}
 
@@ -44,7 +49,8 @@ func VerifyToken(t string) bool {
 	m.Lock()
 	defer m.Unlock()
 
-	if _, exist := tokens[t]; exist {
+	if tv, exist := tokens[t]; exist {
+		tv.To.Stop()
 		delete(tokens, t)
 		return true
 	}

@@ -46,6 +46,7 @@
 			    </div>
 
                 <div class="panel-footer text-center clearfix">
+                    <a href='{{urlfor "WechatController.OauthLogin"}}?oa=1' class="btn btn-sm btn-primary" target="_blank">微信登录</a>
                     <a href='{{urlfor "UsersController.Signup"}}' class="btn btn-sm btn-primary">注册</a>
                     <a href="{{urlfor "UsersController.PasswordReset"}}" class="btn btn-sm btn-info">忘记秘钥</a>
                 </div>
